@@ -1,4 +1,4 @@
-package br.com.oldtown.pharma.pescription;
+package br.com.oldtown.pharma.prescription;
 
 import br.com.oldtown.pharma.product.entity.Product;
 import br.com.oldtown.pharma.user.entity.User;

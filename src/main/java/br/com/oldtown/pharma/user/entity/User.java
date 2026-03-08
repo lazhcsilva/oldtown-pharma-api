@@ -1,7 +1,7 @@
 package br.com.oldtown.pharma.user.entity;
 
 import br.com.oldtown.pharma.order.Order;
-import br.com.oldtown.pharma.pescription.Prescription;
+import br.com.oldtown.pharma.prescription.Prescription;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;

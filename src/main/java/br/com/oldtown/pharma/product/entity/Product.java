@@ -2,7 +2,7 @@ package br.com.oldtown.pharma.product.entity;
 
 import br.com.oldtown.pharma.category.Category;
 import br.com.oldtown.pharma.order.Order;
-import br.com.oldtown.pharma.pescription.Prescription;
+import br.com.oldtown.pharma.prescription.Prescription;
 import br.com.oldtown.pharma.stock.Stock;
 import jakarta.persistence.*;
 
