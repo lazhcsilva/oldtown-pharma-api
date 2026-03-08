@@ -2,6 +2,7 @@ package br.com.oldtown.pharma.product.entity;
 
 import br.com.oldtown.pharma.category.Category;
 import br.com.oldtown.pharma.order.Order;
+import br.com.oldtown.pharma.order.OrderItem;
 import br.com.oldtown.pharma.prescription.Prescription;
 import br.com.oldtown.pharma.stock.Stock;
 import jakarta.persistence.*;
@@ -47,7 +48,7 @@ public class Product {
     private Stock stock;
 
     @OneToMany(mappedBy = "product")
-    private List<Order> orders = new ArrayList<>();
+    private List<OrderItem> orderItems = new ArrayList<>();
 
     @OneToMany(mappedBy = "product")
     private List<Prescription> prescriptions = new ArrayList<>();
@@ -135,8 +136,8 @@ public class Product {
         this.stock = stock;
     }
 
-    public List<Order> getOrders() {
-        return orders;
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
     }
 
     public List<Prescription> getPrescriptions() {
