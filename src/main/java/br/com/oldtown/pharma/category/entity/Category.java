@@ -1,4 +1,4 @@
-package br.com.oldtown.pharma.category;
+package br.com.oldtown.pharma.category.entity;
 
 import br.com.oldtown.pharma.product.entity.Product;
 import jakarta.persistence.*;
