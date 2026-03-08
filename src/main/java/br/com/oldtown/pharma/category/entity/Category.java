@@ -1,6 +1,7 @@
 package br.com.oldtown.pharma.category.entity;
 
 import br.com.oldtown.pharma.product.entity.Product;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ public class Category {
     private String description;
 
     @OneToMany(mappedBy = "category")
+    @JsonIgnore
     private List<Product> products = new ArrayList<>();
 
     public Category() {

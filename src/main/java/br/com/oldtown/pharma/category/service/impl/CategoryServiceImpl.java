@@ -1,36 +1,74 @@
 package br.com.oldtown.pharma.category.service.impl;
 
 import br.com.oldtown.pharma.category.entity.Category;
+import br.com.oldtown.pharma.category.repository.CategoryRepository;
 import br.com.oldtown.pharma.category.service.CategoryService;
+import br.com.oldtown.pharma.shared.handler.BusinessException;
 import org.springframework.stereotype.Service;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
+    private final CategoryRepository categoryRepository;
+
+    public CategoryServiceImpl(CategoryRepository categoryRepository) {
+        this.categoryRepository = categoryRepository;
+    }
+
     @Override
     public List<Category> getAll() {
-        return List.of();
+        List<Category> categories = categoryRepository.findAll();
+        if (categories.isEmpty()) {
+            throw new BusinessException("No categories saved.");
+        }
+        return categories;
+    }
+
+    @Override
+    public Category findById(Long id) {
+        Optional<Category> category = categoryRepository.findById(id);
+        return category.orElseThrow(() -> new BusinessException("id not founded."));
     }
 
     @Override
     public Category findByName(String name) {
-        return null;
+        try {
+            Category category = categoryRepository.findByName(name);
+            if (category != null) {
+                return category;
+            } else {
+                throw new BusinessException("Category not founded.");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to retrieve category: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public void insert(Category category) {
-
+        if (category.getName() == null || category.getDescription() == null
+            || category.getName().isEmpty() || category.getDescription().isEmpty()) {
+            throw new BusinessException("You must fill in all fields.");
+        }
+        categoryRepository.save(category);
     }
 
     @Override
     public void update(Long id, Category category) {
-
+        Optional<Category> categoryId = categoryRepository.findById(id);
+        if (categoryId.isEmpty()) {
+            throw new BusinessException("Id not founded.");
+        }
+        categoryRepository.save(category);
     }
 
     @Override
     public void delete(Long id) {
-
+        Category category = findById(id);
+        categoryRepository.delete(category);
     }
 }
