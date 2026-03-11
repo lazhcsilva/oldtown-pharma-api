@@ -6,7 +6,6 @@ import br.com.oldtown.pharma.category.service.CategoryService;
 import br.com.oldtown.pharma.shared.handler.BusinessException;
 import org.springframework.stereotype.Service;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,15 +35,11 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category findByName(String name) {
-        try {
-            Category category = categoryRepository.findByName(name);
-            if (category != null) {
-                return category;
-            } else {
-                throw new BusinessException("Category not founded.");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to retrieve category: " + e.getMessage(), e);
+        Category category = categoryRepository.findByName(name);
+        if (category != null) {
+            return category;
+        } else {
+            throw new BusinessException("Category not founded.");
         }
     }
 
