@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 @RestController
@@ -33,7 +32,7 @@ public class CategoryController {
 
     @Operation(summary = "Post a new category")
     @PostMapping
-    public ResponseEntity<Category> insertCategory(@RequestBody Category category) throws NoSuchAlgorithmException {
+    public ResponseEntity<Category> insertCategory(@RequestBody Category category) {
         categoryService.insert(category);
         return ResponseEntity.ok(category);
     }
