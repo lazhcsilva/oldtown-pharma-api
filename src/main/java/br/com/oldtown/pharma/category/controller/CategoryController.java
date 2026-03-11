@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/category")
+@RequestMapping("/categories")
 public class CategoryController {
 
     private final CategoryService categoryService;
@@ -25,8 +25,8 @@ public class CategoryController {
     }
 
     @Operation(summary = "Get category by name")
-    @GetMapping("/{name}")
-    public ResponseEntity<Category> findByName(@PathVariable String name) {
+    @GetMapping("/search")
+    public ResponseEntity<Category> findByName(@RequestParam String name) {
         return ResponseEntity.ok(categoryService.findByName(name));
     }
 

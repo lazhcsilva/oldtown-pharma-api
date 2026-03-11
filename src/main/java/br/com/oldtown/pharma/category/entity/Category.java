@@ -23,7 +23,7 @@ public class Category {
 
     @OneToMany(mappedBy = "category")
     @JsonIgnore
-    private List<Product> products = new ArrayList<>();
+    private List<Product> products;
 
     public Category() {
     }
