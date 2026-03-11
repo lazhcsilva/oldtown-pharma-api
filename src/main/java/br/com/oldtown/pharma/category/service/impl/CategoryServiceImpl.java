@@ -30,7 +30,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Category findById(Long id) {
         Optional<Category> category = categoryRepository.findById(id);
-        return category.orElseThrow(() -> new BusinessException("id not founded."));
+        return category.orElseThrow(() -> new BusinessException("Category not found."));
     }
 
     @Override
@@ -54,12 +54,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void update(Long id, Category category) {
-        Optional<Category> categoryBD = categoryRepository.findById(id);
-        if (categoryBD.isEmpty()) {
-            throw new BusinessException("Id not founded.");
-        }
+        Category categoryExisting = categoryRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Category not found."));
 
-        Category categoryExisting = categoryBD.get();
         categoryExisting.setName(category.getName());
         categoryExisting.setDescription(category.getDescription());
 
