@@ -54,11 +54,16 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void update(Long id, Category category) {
-        Optional<Category> categoryId = categoryRepository.findById(id);
-        if (categoryId.isEmpty()) {
+        Optional<Category> categoryBD = categoryRepository.findById(id);
+        if (categoryBD.isEmpty()) {
             throw new BusinessException("Id not founded.");
         }
-        categoryRepository.save(category);
+
+        Category categoryExisting = categoryBD.get();
+        categoryExisting.setName(category.getName());
+        categoryExisting.setDescription(category.getDescription());
+
+        categoryRepository.save(categoryExisting);
     }
 
     @Override
