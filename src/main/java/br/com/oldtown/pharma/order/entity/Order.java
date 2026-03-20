@@ -1,4 +1,4 @@
-package br.com.oldtown.pharma.order;
+package br.com.oldtown.pharma.order.entity;
 
 import br.com.oldtown.pharma.user.entity.User;
 import jakarta.persistence.*;

@@ -1,4 +1,4 @@
-package br.com.oldtown.pharma.order;
+package br.com.oldtown.pharma.order.entity;
 
 public enum OrderStatus {
 
