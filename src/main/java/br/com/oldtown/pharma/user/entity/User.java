@@ -1,7 +1,8 @@
 package br.com.oldtown.pharma.user.entity;
 
-import br.com.oldtown.pharma.order.Order;
+import br.com.oldtown.pharma.order.entity.Order;
 import br.com.oldtown.pharma.prescription.Prescription;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -15,8 +16,11 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 150)
-    private String name;
+    @Column(nullable = false, length = 60)
+    private String firstName;
+
+    @Column(nullable = false, length = 60)
+    private String lastName;
 
     @Column(nullable = false, unique = true, length = 150)
     private String email;
@@ -32,9 +36,11 @@ public class User {
     private boolean active;
 
     @OneToMany(mappedBy = "customer")
+    @JsonIgnore
     private List<Order> orders = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Prescription> prescriptions = new ArrayList<>();
 
     public User() {
@@ -48,12 +54,20 @@ public class User {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getEmail() {
