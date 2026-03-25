@@ -1,5 +1,8 @@
 package br.com.oldtown.pharma.category.service.impl;
 
+import br.com.oldtown.pharma.category.dto.CategoryResponse;
+import br.com.oldtown.pharma.category.dto.CreateCategoryRequest;
+import br.com.oldtown.pharma.category.dto.UpdateCategoryRequest;
 import br.com.oldtown.pharma.category.entity.Category;
 import br.com.oldtown.pharma.category.repository.CategoryRepository;
 import br.com.oldtown.pharma.category.service.CategoryService;
@@ -19,53 +22,80 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<Category> getAll() {
+    public List<CategoryResponse> getAll() {
         List<Category> categories = categoryRepository.findAll();
+
         if (categories.isEmpty()) {
             throw new BusinessException("No categories saved.");
         }
-        return categories;
+
+        return categories.stream()
+                .map(category -> new CategoryResponse(
+                        category.getId(),
+                        category.getName(),
+                        category.getDescription()
+                )).toList();
     }
 
     @Override
-    public Category findById(Long id) {
+    public CategoryResponse findById(Long id) {
         Optional<Category> category = categoryRepository.findById(id);
-        return category.orElseThrow(() -> new BusinessException("Category not found."));
-    }
-
-    @Override
-    public Category findByName(String name) {
-        Category category = categoryRepository.findByName(name);
-        if (category != null) {
-            return category;
+        if (category.isPresent()) {
+            return new CategoryResponse(category.get().getId(),
+                    category.get().getName(),
+                    category.get().getDescription());
         } else {
-            throw new BusinessException("Category not founded.");
+            throw new BusinessException("Category not found");
         }
     }
 
     @Override
-    public void insert(Category category) {
-        if (category.getName() == null || category.getDescription() == null
-            || category.getName().isEmpty() || category.getDescription().isEmpty()) {
-            throw new BusinessException("You must fill in all fields.");
+    public CategoryResponse findByName(String name) {
+        Category category = categoryRepository.findByName(name);
+
+        if (category != null) {
+            return new CategoryResponse(category.getId(),
+                    category.getName(),
+                    category.getDescription());
+        } else {
+            throw new BusinessException("Category not found");
         }
-        categoryRepository.save(category);
     }
 
     @Override
-    public void update(Long id, Category category) {
-        Category categoryExisting = categoryRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Category not found."));
+    public CategoryResponse create(CreateCategoryRequest request) {
+        Category category = categoryRepository.findByName(request.name());
 
-        categoryExisting.setName(category.getName());
-        categoryExisting.setDescription(category.getDescription());
+        if (category != null) {
+            throw new BusinessException("Category already exists");
+        }
 
-        categoryRepository.save(categoryExisting);
+        Category newCategory = new Category();
+        newCategory.setName(request.name());
+        newCategory.setDescription(request.description());
+
+        Category categorySaved = categoryRepository.save(newCategory);
+        return new CategoryResponse(categorySaved.getId(), categorySaved.getName(), categorySaved.getDescription());
+    }
+
+    @Override
+    public CategoryResponse update(Long id, UpdateCategoryRequest request) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Category not found"));
+
+        Category categoryUpdated = new Category();
+        categoryUpdated.setId(id);
+        categoryUpdated.setName(request.name());
+        categoryUpdated.setDescription(request.description());
+        categoryRepository.save(categoryUpdated);
+        return new CategoryResponse(category.getId(), category.getName(), category.getDescription());
     }
 
     @Override
     public void delete(Long id) {
-        Category category = findById(id);
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Category not found"));
+
         categoryRepository.delete(category);
     }
 }
