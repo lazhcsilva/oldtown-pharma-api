@@ -1,14 +1,17 @@
 package br.com.oldtown.pharma.user.service;
 
-import br.com.oldtown.pharma.user.entity.User;
+import br.com.oldtown.pharma.user.dto.CreateUserRequest;
+import br.com.oldtown.pharma.user.dto.UpdateUserRequest;
+import br.com.oldtown.pharma.user.dto.UserResponse;
 
 import java.util.List;
 
 public interface UserService {
-    List<User> findAll();
-    User findById(Long id);
-    User findByEmail(String email);
-    void insert(User user);
-    void update(Long id, User user);
+    List<UserResponse> findAll();
+    List<UserResponse> findAllUsersActive();
+    UserResponse findById(Long id);
+    UserResponse findByEmail(String email);
+    UserResponse create(CreateUserRequest user);
+    UserResponse update(Long id, UpdateUserRequest user);
     void delete(Long id);
 }
