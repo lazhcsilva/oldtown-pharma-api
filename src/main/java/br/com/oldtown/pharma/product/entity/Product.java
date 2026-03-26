@@ -4,6 +4,7 @@ import br.com.oldtown.pharma.category.entity.Category;
 import br.com.oldtown.pharma.order.entity.OrderItem;
 import br.com.oldtown.pharma.prescription.Prescription;
 import br.com.oldtown.pharma.stock.Stock;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -44,12 +45,15 @@ public class Product {
     private Category category;
 
     @OneToOne(mappedBy = "product")
+    @JsonIgnore
     private Stock stock;
 
     @OneToMany(mappedBy = "product")
+    @JsonIgnore
     private List<OrderItem> orderItems = new ArrayList<>();
 
     @OneToMany(mappedBy = "product")
+    @JsonIgnore
     private List<Prescription> prescriptions = new ArrayList<>();
 
     public Product() {
