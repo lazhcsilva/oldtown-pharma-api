@@ -6,4 +6,5 @@ import org.springframework.data.domain.Pageable;
 
 public interface ProductService {
     Page<ProductResponse> getALl(Pageable pageable);
+    ProductResponse findByName(String name);
 }

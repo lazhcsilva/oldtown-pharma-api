@@ -1,6 +1,7 @@
 package br.com.oldtown.pharma.product.service.impl;
 
 import br.com.oldtown.pharma.product.dto.ProductResponse;
+import br.com.oldtown.pharma.product.entity.Product;
 import br.com.oldtown.pharma.product.mapper.ProductMapper;
 import br.com.oldtown.pharma.product.repository.ProductRepository;
 import br.com.oldtown.pharma.product.service.ProductService;
@@ -24,5 +25,16 @@ public class ProductServiceImpl implements ProductService {
     public Page<ProductResponse> getALl(Pageable pageable) {
         return repository.findAll(pageable)
                 .map(mapper::toResponse);
+    }
+
+    @Override
+    public ProductResponse findByName(String name) {
+        Product product = repository.findByName(name);
+
+        if (product == null) {
+            throw new BusinessException("Product not found with name: " + name);
+        }
+
+        return mapper.toResponse(product);
     }
 }

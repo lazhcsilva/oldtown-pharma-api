@@ -11,9 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Products", description = "Operations related to products")
 @RestController
@@ -33,9 +31,21 @@ public class ProductController {
     })
     @GetMapping
     public ResponseEntity<PagedModel<ProductResponse>> getAll(
-            @Parameter(hidden = true)Pageable pageable) {
+            @Parameter(hidden = true) Pageable pageable) {
         Page<ProductResponse> page = productService.getALl(pageable);
         return ResponseEntity.ok(new PagedModel<>(page));
+    }
+
+    @Operation(summary = "Get product by name")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    @GetMapping("/search")
+    public ResponseEntity<ProductResponse> findByName(
+            @Parameter(description = "Product name", example = "Dipirona")
+            @RequestParam String name) {
+        return ResponseEntity.ok(productService.findByName(name));
     }
 
 }
