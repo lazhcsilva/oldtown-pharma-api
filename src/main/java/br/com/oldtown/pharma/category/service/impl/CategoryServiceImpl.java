@@ -4,37 +4,31 @@ import br.com.oldtown.pharma.category.dto.CategoryResponse;
 import br.com.oldtown.pharma.category.dto.CreateCategoryRequest;
 import br.com.oldtown.pharma.category.dto.UpdateCategoryRequest;
 import br.com.oldtown.pharma.category.entity.Category;
+import br.com.oldtown.pharma.category.mapper.CategoryMapper;
 import br.com.oldtown.pharma.category.repository.CategoryRepository;
 import br.com.oldtown.pharma.category.service.CategoryService;
 import br.com.oldtown.pharma.shared.handler.BusinessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final CategoryMapper mapper;
 
-    public CategoryServiceImpl(CategoryRepository categoryRepository) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper mapper) {
         this.categoryRepository = categoryRepository;
+        this.mapper = mapper;
     }
 
     @Override
-    public List<CategoryResponse> getAll() {
-        List<Category> categories = categoryRepository.findAll();
-
-        if (categories.isEmpty()) {
-            throw new BusinessException("No categories saved.");
-        }
-
-        return categories.stream()
-                .map(category -> new CategoryResponse(
-                        category.getId(),
-                        category.getName(),
-                        category.getDescription()
-                )).toList();
+    public Page<CategoryResponse> getAll(Pageable pageable) {
+        return categoryRepository.findAll(pageable)
+                .map(mapper::toResponse);
     }
 
     @Override
