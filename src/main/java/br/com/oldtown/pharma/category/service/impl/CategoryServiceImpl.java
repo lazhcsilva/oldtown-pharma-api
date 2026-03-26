@@ -46,14 +46,10 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryResponse findByName(String name) {
         Category category = categoryRepository.findByName(name);
-
-        if (category != null) {
-            return new CategoryResponse(category.getId(),
-                    category.getName(),
-                    category.getDescription());
-        } else {
-            throw new BusinessException("Category not found");
+        if (category == null) {
+            throw new BusinessException("Category not found with name: " + name);
         }
+        return mapper.toResponse(category);
     }
 
     @Override

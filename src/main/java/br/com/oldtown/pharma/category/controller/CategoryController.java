@@ -42,8 +42,14 @@ public class CategoryController {
     }
 
     @Operation(summary = "Get category by name")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Category retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
     @GetMapping("/search")
-    public ResponseEntity<CategoryResponse> findByName(@RequestParam String name) {
+    public ResponseEntity<CategoryResponse> findByName(
+            @Parameter(description = "Category", example = "free")
+            @RequestParam String name) {
         return ResponseEntity.ok(categoryService.findByName(name));
     }
 
