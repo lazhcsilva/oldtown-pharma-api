@@ -83,11 +83,11 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("Category not found"));
 
-        Category categoryUpdated = new Category();
-        categoryUpdated.setId(id);
-        categoryUpdated.setName(request.name());
-        categoryUpdated.setDescription(request.description());
-        categoryRepository.save(categoryUpdated);
+        category.setId(id);
+        category.setName(request.name());
+        category.setDescription(request.description());
+        categoryRepository.save(category);
+
         return new CategoryResponse(category.getId(), category.getName(), category.getDescription());
     }
 

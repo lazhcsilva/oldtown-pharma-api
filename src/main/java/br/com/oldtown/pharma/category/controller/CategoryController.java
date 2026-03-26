@@ -6,6 +6,7 @@ import br.com.oldtown.pharma.category.dto.UpdateCategoryRequest;
 import br.com.oldtown.pharma.category.entity.Category;
 import br.com.oldtown.pharma.category.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,13 +36,13 @@ public class CategoryController {
 
     @Operation(summary = "Post a new category")
     @PostMapping
-    public ResponseEntity<CategoryResponse> create(@RequestBody CreateCategoryRequest category) {
+    public ResponseEntity<CategoryResponse> create(@Valid @RequestBody CreateCategoryRequest category) {
         return ResponseEntity.ok(categoryService.create(category));
     }
 
     @Operation(summary = "Update category")
     @PutMapping("/{id}")
-    public ResponseEntity<CategoryResponse> update(@PathVariable Long id, @RequestBody UpdateCategoryRequest category) {
+    public ResponseEntity<CategoryResponse> update(@PathVariable Long id, @Valid @RequestBody UpdateCategoryRequest category) {
         return ResponseEntity.ok(categoryService.update(id, category));
     }
 

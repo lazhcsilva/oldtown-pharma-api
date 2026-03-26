@@ -9,6 +9,7 @@ import br.com.oldtown.pharma.user.entity.Role;
 import br.com.oldtown.pharma.user.entity.User;
 import br.com.oldtown.pharma.user.repository.UserRepository;
 import br.com.oldtown.pharma.user.service.UserService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,11 +19,11 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoderConfig passwordEncoderConfig;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoderConfig passwordEncoderConfig) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.passwordEncoderConfig = passwordEncoderConfig;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -91,7 +92,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
-        user.setPassword(passwordEncoderConfig.passwordEncoder().encode(request.password()));
+        user.setPassword(passwordEncoder.encode(request.password()));
         user.setEmail(request.email());
         user.setActive(true);
         user.setRole(Role.CUSTOMER);
@@ -112,6 +113,7 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
         user.setEmail(request.email());
+        user.setPassword(passwordEncoder.encode(request.password()));
 
         User saved = userRepository.save(user);
         return toResponse(saved);
