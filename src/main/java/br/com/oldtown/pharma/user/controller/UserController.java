@@ -5,17 +5,23 @@ import br.com.oldtown.pharma.user.dto.UpdateUserRequest;
 import br.com.oldtown.pharma.user.dto.UserResponse;
 import br.com.oldtown.pharma.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Users", description = "Operations related to users")
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserService userService;
@@ -25,14 +31,21 @@ public class UserController {
     }
 
     @Operation(summary = "Get all users")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
     @GetMapping
-    public ResponseEntity<List<UserResponse>> findAll() {
-        return ResponseEntity.ok(userService.findAll());
+    public ResponseEntity<PagedModel<UserResponse>> findAll(
+            @Parameter(hidden = true) Pageable pageable) {
+        Page<UserResponse> page = userService.findAll(pageable);
+        return ResponseEntity.ok(new PagedModel<>(page));
     }
 
     @Operation(summary = "Get all users active")
     @GetMapping("/actives")
-    public ResponseEntity<List<UserResponse>> findAllUsersActive() {
+    public ResponseEntity<List<UserResponse>> findAllUsersActive(
+            @Parameter(hidden = true) Pageable pageable) {
         return ResponseEntity.ok(userService.findAllUsersActive());
     }
 

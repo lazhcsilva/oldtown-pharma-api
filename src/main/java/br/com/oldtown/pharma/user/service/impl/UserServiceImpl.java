@@ -1,14 +1,16 @@
 package br.com.oldtown.pharma.user.service.impl;
 
-import br.com.oldtown.pharma.config.PasswordEncoderConfig;
 import br.com.oldtown.pharma.shared.handler.BusinessException;
 import br.com.oldtown.pharma.user.dto.CreateUserRequest;
 import br.com.oldtown.pharma.user.dto.UpdateUserRequest;
 import br.com.oldtown.pharma.user.dto.UserResponse;
 import br.com.oldtown.pharma.user.entity.Role;
 import br.com.oldtown.pharma.user.entity.User;
+import br.com.oldtown.pharma.user.mapper.UserMapper;
 import br.com.oldtown.pharma.user.repository.UserRepository;
 import br.com.oldtown.pharma.user.service.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,34 +22,25 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper mapper;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper mapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.mapper = mapper;
     }
 
     @Override
-    public List<UserResponse> findAll() {
-        List<User> users = userRepository.findAll();
-
-        if (users.isEmpty()) {
-            throw new BusinessException("Users not found.");
-        }
-
-        return users.stream()
-                .map(user -> new UserResponse(
-                        user.getId(),
-                        user.getFirstName(),
-                        user.getLastName(),
-                        user.getEmail()
-                )).toList();
+    public Page<UserResponse> findAll(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(mapper::toResponse);
     }
 
     @Override
     public List<UserResponse> findAllUsersActive() {
         List<UserResponse> users = userRepository.findByActiveTrue()
                 .stream()
-                .map(this::toResponse)
+                .map(mapper::toResponse)
                 .toList();
 
         if (users.isEmpty()) {
@@ -116,16 +109,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(request.password()));
 
         User saved = userRepository.save(user);
-        return toResponse(saved);
-    }
-
-    private UserResponse toResponse(User user) {
-        return new UserResponse(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail()
-        );
+        return mapper.toResponse(saved);
     }
 
     @Override
