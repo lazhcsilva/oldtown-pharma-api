@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
@@ -32,7 +33,7 @@ public class UserController {
 
     @Operation(summary = "Get all users")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Products retrieved successfully"),
+            @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     @GetMapping
@@ -43,6 +44,10 @@ public class UserController {
     }
 
     @Operation(summary = "Get all users active")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
     @GetMapping("/actives")
     public ResponseEntity<List<UserResponse>> findAllUsersActive(
             @Parameter(hidden = true) Pageable pageable) {
@@ -50,18 +55,30 @@ public class UserController {
     }
 
     @Operation(summary = "Get user by id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> findById(@PathVariable Long id) {
+    public ResponseEntity<UserResponse> findById(@PathVariable @Positive Long id) {
         return ResponseEntity.ok(userService.findById(id));
     }
 
     @Operation(summary = "Get user by email")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
     @GetMapping("/search")
     public ResponseEntity<UserResponse> findByEmail(@RequestParam String email) {
         return ResponseEntity.ok(userService.findByEmail(email));
     }
 
     @Operation(summary = "Insert a new user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Users retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
     @PostMapping
     public ResponseEntity<UserResponse> create(@Valid @RequestBody CreateUserRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(request));
@@ -69,7 +86,12 @@ public class UserController {
 
     @Operation(summary = "Update user")
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> update(@PathVariable Long id, @Valid @RequestBody UpdateUserRequest user) {
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    public ResponseEntity<UserResponse> update(@PathVariable @Positive Long id,
+                                               @Valid @RequestBody UpdateUserRequest user) {
         return ResponseEntity.ok(userService.update(id, user));
     }
 
@@ -79,7 +101,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
