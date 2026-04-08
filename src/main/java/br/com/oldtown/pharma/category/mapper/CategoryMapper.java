@@ -1,6 +1,8 @@
 package br.com.oldtown.pharma.category.mapper;
 
 import br.com.oldtown.pharma.category.dto.CategoryResponse;
+import br.com.oldtown.pharma.category.dto.CreateCategoryRequest;
+import br.com.oldtown.pharma.category.dto.UpdateCategoryRequest;
 import br.com.oldtown.pharma.category.entity.Category;
 import org.springframework.stereotype.Component;
 
@@ -17,5 +19,14 @@ public class CategoryMapper {
                 category.getName(),
                 category.getDescription()
         );
+    }
+
+    public Category toEntity(CreateCategoryRequest request) {
+        return new Category(request.name(), request.description());
+    }
+
+    public void updateEntity(Category category, UpdateCategoryRequest request) {
+        category.setName(request.name());
+        category.setDescription(request.description());
     }
 }
