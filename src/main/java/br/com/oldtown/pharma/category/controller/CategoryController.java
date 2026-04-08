@@ -50,7 +50,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "Category not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryResponse> findById(@Valid @Positive Long id) {
+    public ResponseEntity<CategoryResponse> findById(@PathVariable @Positive Long id) {
         return ResponseEntity.ok(categoryService.findById(id));
     }
 
@@ -99,5 +99,4 @@ public class CategoryController {
         categoryService.delete(id);
         return ResponseEntity.noContent().build();
     }
-
 }
