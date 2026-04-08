@@ -40,55 +40,29 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse findByName(String name) {
-        Product product = productRepository.findByName(name);
-
-        if (product == null) {
-            throw new NotFoundException("Product not found with name: " + name);
-        }
-
-        return mapper.toResponse(product);
+        return productRepository.findByName(name)
+                .map(mapper::toResponse)
+                .orElseThrow(() -> new NotFoundException("Product not found with name: " + name));
     }
 
     @Override
     public ProductResponse findById(Long id) {
-        Optional<Product> product = productRepository.findById(id);
-
-        if (product.isEmpty()) {
-            throw new NotFoundException("Product not found");
-        }
-
-        return mapper.toResponse(product.get());
+        return productRepository.findById(id)
+                .map(mapper::toResponse)
+                .orElseThrow(() -> new NotFoundException("Product not found with id: " + id));
     }
 
     @Override
     public ProductResponse create(CreateProductRequest request) {
-        Category category = categoryRepository.findById(request.categoryID())
+        if (productRepository.existsByNameIgnoreCase(request.name())) {
+            throw new ConflictException("Product already exists.");
+        }
+
+        Category category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new NotFoundException("Category not found."));
 
-        Product product = new Product();
-        product.setName(request.name());
-        product.setDescription(request.description());
-        product.setManufacturer(request.manufacturer());
-        if (request.price().compareTo(BigDecimal.ZERO) < 0) {
-            throw new BadRequestException("Price cannot be negative.");
-        }
-        product.setPrice(request.price());
-        product.setActive(request.active());
-        product.setControlled(request.controlled());
-        product.setRequiresPrescription(request.requiresPrescription());
-        product.setCategory(category);
-
-        Product p = productRepository.findByName(product.getName());
-
-        if (p != null) {
-            if (p.getName().equalsIgnoreCase(request.name())) {
-                throw new ConflictException("Product already exists");
-            }
-        }
-
-        Product savedProduct = productRepository.save(product);
-
-        return mapper.toResponse(savedProduct);
+        Product product = mapper.toEntity(request, category);
+        return mapper.toResponse(productRepository.save(product));
     }
 
     @Override
@@ -96,25 +70,20 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Product not found."));
 
-        Category category = categoryRepository.findById(request.categoryID())
+        if (productRepository.existsByNameIgnoreCaseAndIdNot(request.name(), id)) {
+            throw new ConflictException("Product already exists.");
+        }
+
+        Category category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new NotFoundException("Category not found."));
 
-        product.setName(request.name());
-        product.setDescription(request.description());
-        product.setManufacturer(request.manufacturer());
-        product.setPrice(request.price());
-        product.setControlled(request.controlled());
-        product.setActive(request.active());
-        product.setRequiresPrescription(request.requiresPrescription());
-        product.setCategory(category);
+        mapper.updateEntity(product, request, category);
 
-        Product productUpdate = productRepository.save(product);
-
-        return mapper.toResponse(productUpdate);
+        return mapper.toResponse(productRepository.save(product));
     }
 
     @Override
-    public void delete(long id) {
+    public void delete(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Product not found."));
         productRepository.delete(product);

@@ -14,12 +14,15 @@ import jakarta.validation.constraints.Positive;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Products", description = "Operations related to products")
 @RestController
 @RequestMapping("/api/v1/products")
+@Validated
 public class ProductController {
 
     private final ProductService productService;
@@ -34,7 +37,7 @@ public class ProductController {
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     @GetMapping
-    public ResponseEntity<PagedModel<ProductResponse>> getAll(
+    public ResponseEntity<PagedModel<ProductResponse>> findAll(
             @Parameter(hidden = true) Pageable pageable) {
         Page<ProductResponse> page = productService.getAll(pageable);
         return ResponseEntity.ok(new PagedModel<>(page));
@@ -43,7 +46,8 @@ public class ProductController {
     @Operation(summary = "Gey product by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
     })
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> findById(@PathVariable @Positive Long id) {
@@ -53,28 +57,30 @@ public class ProductController {
     @Operation(summary = "Get product by name")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Products retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
     })
     @GetMapping("/search")
     public ResponseEntity<ProductResponse> findByName(
-            @Parameter(description = "Product name", example = "Dipirona")
+            @Parameter(description = "Product name", example = "Dipyrone")
             @RequestParam String name) {
         return ResponseEntity.ok(productService.findByName(name));
     }
 
     @Operation(summary = "Create a new Product")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Success"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
+            @ApiResponse(responseCode = "201", description = "Product created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "409", description = "Product already exists")
     })
     @PostMapping
     public ResponseEntity<ProductResponse> create(@Valid @RequestBody CreateProductRequest request) {
-        return ResponseEntity.ok(productService.create(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(request));
     }
 
     @Operation(summary = "Update a product")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "200", description = "Product updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     @PutMapping("/{id}")
@@ -85,7 +91,7 @@ public class ProductController {
 
     @Operation(summary = "Delete a product")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "200", description = "Product deleted successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     @DeleteMapping("/{id}")
@@ -93,5 +99,4 @@ public class ProductController {
         productService.delete(id);
         return ResponseEntity.noContent().build();
     }
-
 }

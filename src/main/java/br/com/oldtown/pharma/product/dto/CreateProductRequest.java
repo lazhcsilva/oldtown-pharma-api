@@ -30,6 +30,6 @@ public record CreateProductRequest(
         Boolean active,
 
         @NotNull(message = "Category is required")
-        long categoryID
+        long categoryId
 ) {
 }

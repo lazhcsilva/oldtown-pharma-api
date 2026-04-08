@@ -59,6 +59,18 @@ public class Product {
     public Product() {
     }
 
+    public Product(String name, String description, String manufacturer, BigDecimal price, boolean controlled,
+                   boolean requiresPrescription, boolean active, Category category) {
+        this.name = name;
+        this.description = description;
+        this.manufacturer = manufacturer;
+        this.price = price;
+        this.controlled = controlled;
+        this.requiresPrescription = requiresPrescription;
+        this.active = active;
+        this.category = category;
+    }
+
     public Long getId() {
         return id;
     }
