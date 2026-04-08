@@ -1,6 +1,7 @@
 package br.com.oldtown.pharma.user.service.impl;
 
-import br.com.oldtown.pharma.shared.handler.BusinessException;
+import br.com.oldtown.pharma.shared.exception.ConflictException;
+import br.com.oldtown.pharma.shared.exception.NotFoundException;
 import br.com.oldtown.pharma.user.dto.CreateUserRequest;
 import br.com.oldtown.pharma.user.dto.UpdateUserRequest;
 import br.com.oldtown.pharma.user.dto.UserResponse;
@@ -15,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
                 .toList();
 
         if (users.isEmpty()) {
-            throw new BusinessException("Users not found.");
+            throw new NotFoundException("Users not found.");
         }
 
         return users;
@@ -52,34 +52,26 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse findById(Long id) {
-        Optional<User> userDB = userRepository.findById(id);
-        if (userDB.isPresent()) {
-            return new UserResponse(userDB.get().getId(),
-                    userDB.get().getFirstName(),
-                    userDB.get().getLastName(),
-                    userDB.get().getEmail());
-        } else {
-            throw new BusinessException("User not found");
-        }
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
+
+        return mapper.toResponse(user);
     }
 
     @Override
     public UserResponse findByEmail(String email) {
         User userDB = userRepository.findByEmail(email);
         if (userDB != null) {
-            return new UserResponse(userDB.getId(),
-                    userDB.getFirstName(),
-                    userDB.getLastName(),
-                    userDB.getEmail());
+            return mapper.toResponse(userDB);
         } else {
-            throw new BusinessException("User not found");
+            throw new NotFoundException("User not found");
         }
     }
 
     @Override
     public UserResponse create(CreateUserRequest request) {
         if (userRepository.existsByEmail(request.email())) {
-            throw new BusinessException("Email already exists.");
+            throw new ConflictException("Email already exists.");
         }
 
         User user = new User();
@@ -97,10 +89,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse update(Long id, UpdateUserRequest request) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("User not found."));
+                .orElseThrow(() -> new NotFoundException("User not found."));
 
         if (!user.getEmail().equals(request.email()) && userRepository.existsByEmail(request.email())) {
-            throw new BusinessException("Email already registered");
+            throw new ConflictException("Email already registered");
         }
 
         user.setFirstName(request.firstName());
@@ -115,7 +107,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void delete(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("User not found."));
+                .orElseThrow(() -> new NotFoundException("User not found."));
         user.setActive(false);
         userRepository.save(user);
     }

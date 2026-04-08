@@ -3,7 +3,8 @@ package br.com.oldtown.pharma.order.service.impl;
 import br.com.oldtown.pharma.order.entity.Order;
 import br.com.oldtown.pharma.order.repository.OrderRepository;
 import br.com.oldtown.pharma.order.service.OrderService;
-import br.com.oldtown.pharma.shared.handler.BusinessException;
+import br.com.oldtown.pharma.shared.exception.BadRequestException;
+import br.com.oldtown.pharma.shared.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public class OrderServiceImpl implements OrderService {
     public List<Order> findAll() {
         List<Order> orders = orderRepository.findAll();
         if (orders.isEmpty()) {
-            throw new BusinessException("Orders not found.");
+            throw new NotFoundException("Orders not found.");
         }
         return orders;
     }
@@ -30,13 +31,13 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order findById(Long id) {
         Optional<Order> order = orderRepository.findById(id);
-        return order.orElseThrow(() -> new BusinessException("Order not found."));
+        return order.orElseThrow(() -> new NotFoundException("Order not found."));
     }
 
     @Override
     public void insert(Order order) {
         if (order.getItems() == null || order.getItems().isEmpty()) {
-            throw new BusinessException("Order without items.");
+            throw new BadRequestException("Order without items.");
         } else {
             System.out.println("OK");
         }

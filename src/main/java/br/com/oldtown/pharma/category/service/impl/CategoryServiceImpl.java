@@ -7,7 +7,8 @@ import br.com.oldtown.pharma.category.entity.Category;
 import br.com.oldtown.pharma.category.mapper.CategoryMapper;
 import br.com.oldtown.pharma.category.repository.CategoryRepository;
 import br.com.oldtown.pharma.category.service.CategoryService;
-import br.com.oldtown.pharma.shared.handler.BusinessException;
+import br.com.oldtown.pharma.shared.exception.ConflictException;
+import br.com.oldtown.pharma.shared.exception.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,7 +40,7 @@ public class CategoryServiceImpl implements CategoryService {
                     category.get().getName(),
                     category.get().getDescription());
         } else {
-            throw new BusinessException("Category not found");
+            throw new NotFoundException("Category not found");
         }
     }
 
@@ -47,7 +48,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryResponse findByName(String name) {
         Category category = categoryRepository.findByName(name);
         if (category == null) {
-            throw new BusinessException("Category not found with name: " + name);
+            throw new NotFoundException("Category not found with name: " + name);
         }
         return mapper.toResponse(category);
     }
@@ -57,7 +58,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findByName(request.name());
 
         if (category != null) {
-            throw new BusinessException("Category already exists");
+            throw new ConflictException("Category already exists");
         }
 
         Category newCategory = new Category();
@@ -71,7 +72,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryResponse update(Long id, UpdateCategoryRequest request) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Category not found"));
+                .orElseThrow(() -> new NotFoundException("Category not found"));
 
         category.setId(id);
         category.setName(request.name());
@@ -84,7 +85,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void delete(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Category not found"));
+                .orElseThrow(() -> new NotFoundException("Category not found"));
 
         categoryRepository.delete(category);
     }

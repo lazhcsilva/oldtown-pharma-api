@@ -9,11 +9,14 @@ import br.com.oldtown.pharma.product.entity.Product;
 import br.com.oldtown.pharma.product.mapper.ProductMapper;
 import br.com.oldtown.pharma.product.repository.ProductRepository;
 import br.com.oldtown.pharma.product.service.ProductService;
-import br.com.oldtown.pharma.shared.handler.BusinessException;
+import br.com.oldtown.pharma.shared.exception.BadRequestException;
+import br.com.oldtown.pharma.shared.exception.ConflictException;
+import br.com.oldtown.pharma.shared.exception.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 @Service
@@ -40,7 +43,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findByName(name);
 
         if (product == null) {
-            throw new BusinessException("Product not found with name: " + name);
+            throw new NotFoundException("Product not found with name: " + name);
         }
 
         return mapper.toResponse(product);
@@ -51,7 +54,7 @@ public class ProductServiceImpl implements ProductService {
         Optional<Product> product = productRepository.findById(id);
 
         if (product.isEmpty()) {
-            throw new BusinessException("Product not found");
+            throw new NotFoundException("Product not found");
         }
 
         return mapper.toResponse(product.get());
@@ -60,12 +63,15 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse create(CreateProductRequest request) {
         Category category = categoryRepository.findById(request.categoryID())
-                .orElseThrow(() -> new BusinessException("Category not found."));
+                .orElseThrow(() -> new NotFoundException("Category not found."));
 
         Product product = new Product();
         product.setName(request.name());
         product.setDescription(request.description());
         product.setManufacturer(request.manufacturer());
+        if (request.price().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BadRequestException("Price cannot be negative.");
+        }
         product.setPrice(request.price());
         product.setActive(request.active());
         product.setControlled(request.controlled());
@@ -76,7 +82,7 @@ public class ProductServiceImpl implements ProductService {
 
         if (p != null) {
             if (p.getName().equalsIgnoreCase(request.name())) {
-                throw new BusinessException("Product already exists");
+                throw new ConflictException("Product already exists");
             }
         }
 
@@ -88,10 +94,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse update(Long id, UpdateProductRequest request) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Product not found."));
+                .orElseThrow(() -> new NotFoundException("Product not found."));
 
         Category category = categoryRepository.findById(request.categoryID())
-                .orElseThrow(() -> new BusinessException("Category not found."));
+                .orElseThrow(() -> new NotFoundException("Category not found."));
 
         product.setName(request.name());
         product.setDescription(request.description());
@@ -110,7 +116,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void delete(long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Product not found."));
+                .orElseThrow(() -> new NotFoundException("Product not found."));
         productRepository.delete(product);
     }
 }

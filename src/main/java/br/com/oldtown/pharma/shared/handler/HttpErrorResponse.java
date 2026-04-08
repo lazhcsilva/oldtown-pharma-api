@@ -1,0 +1,14 @@
+package br.com.oldtown.pharma.shared.handler;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+public record HttpErrorResponse(
+        LocalDateTime timestamp,
+        Integer status,
+        String error,
+        String message,
+        String path,
+        List<String> details
+) {
+}
