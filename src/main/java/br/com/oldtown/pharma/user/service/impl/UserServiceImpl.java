@@ -1,7 +1,9 @@
 package br.com.oldtown.pharma.user.service.impl;
 
+import br.com.oldtown.pharma.shared.exception.BadRequestException;
 import br.com.oldtown.pharma.shared.exception.ConflictException;
 import br.com.oldtown.pharma.shared.exception.NotFoundException;
+import br.com.oldtown.pharma.user.dto.ChangePasswordRequest;
 import br.com.oldtown.pharma.user.dto.CreateUserRequest;
 import br.com.oldtown.pharma.user.dto.UpdateUserRequest;
 import br.com.oldtown.pharma.user.dto.UserResponse;
@@ -13,8 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -31,12 +31,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserResponse> findAll(Pageable pageable) {
+        // Using stream to map entities to DTOs to avoid exposing internal model
         return userRepository.findAll(pageable)
                 .map(mapper::toResponse);
     }
 
     @Override
     public Page<UserResponse> findAllActive(Pageable pageable) {
+        // Using stream to map entities to DTOs to avoid exposing internal model
         return userRepository.findByActiveTrue(pageable)
                 .map(mapper::toResponse);
     }
@@ -91,5 +93,38 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NotFoundException("User not found."));
         user.setActive(false);
         userRepository.save(user);
+    }
+
+    @Override
+    public void changePassword(Long id, ChangePasswordRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
+
+        validatePasswords(request, user);
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+    }
+
+    private void validatePasswords(ChangePasswordRequest request, User user) {
+        if (!validatePassword(request.oldPassword(), user.getPassword())) {
+            throw new BadRequestException("Old password is incorrect.");
+        }
+
+        if (!request.newPassword().equals(request.confirmNewPassword())) {
+            throw new BadRequestException("Passwords do not match.");
+        }
+
+        if (validatePassword(request.newPassword(), user.getPassword())) {
+            throw new ConflictException("New password must be different from the old password.");
+        }
+
+        if (request.newPassword().length() < 8) {
+            throw new BadRequestException("Password must have at least 8 characters.");
+        }
+    }
+
+    private boolean validatePassword(String passwordEntered, String passwordSaveHash) {
+        return passwordEncoder.matches(passwordEntered, passwordSaveHash);
     }
 }

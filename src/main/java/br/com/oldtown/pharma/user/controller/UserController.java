@@ -1,5 +1,6 @@
 package br.com.oldtown.pharma.user.controller;
 
+import br.com.oldtown.pharma.user.dto.ChangePasswordRequest;
 import br.com.oldtown.pharma.user.dto.CreateUserRequest;
 import br.com.oldtown.pharma.user.dto.UpdateUserRequest;
 import br.com.oldtown.pharma.user.dto.UserResponse;
@@ -111,5 +112,18 @@ public class UserController {
     public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
         userService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Change user password")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Password changed successfully."),
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @PatchMapping("/{id}/password")
+    public ResponseEntity<Void> changePassword(@PathVariable @Positive Long id,
+                                               @RequestBody @Valid ChangePasswordRequest request) {
+        userService.changePassword(id, request);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

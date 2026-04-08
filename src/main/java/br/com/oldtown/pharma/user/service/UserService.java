@@ -67,4 +67,12 @@ public interface UserService {
      * @param id user identifier
      */
     void delete(Long id);
+
+    /**
+     * Changes the user's password.
+     *
+     * @param id user identifier
+     * @param request password change data
+     */
+    void changePassword(Long id, ChangePasswordRequest request);
 }
