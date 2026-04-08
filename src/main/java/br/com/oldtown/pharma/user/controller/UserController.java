@@ -51,7 +51,7 @@ public class UserController {
     @GetMapping("/actives")
     public ResponseEntity<List<UserResponse>> findAllUsersActive(
             @Parameter(hidden = true) Pageable pageable) {
-        return ResponseEntity.ok(userService.findAllUsersActive());
+        return ResponseEntity.ok(userService.findAllActive());
     }
 
     @Operation(summary = "Get user by id")

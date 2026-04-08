@@ -5,7 +5,6 @@ import br.com.oldtown.pharma.shared.exception.NotFoundException;
 import br.com.oldtown.pharma.user.dto.CreateUserRequest;
 import br.com.oldtown.pharma.user.dto.UpdateUserRequest;
 import br.com.oldtown.pharma.user.dto.UserResponse;
-import br.com.oldtown.pharma.user.entity.Role;
 import br.com.oldtown.pharma.user.entity.User;
 import br.com.oldtown.pharma.user.mapper.UserMapper;
 import br.com.oldtown.pharma.user.repository.UserRepository;
@@ -37,35 +36,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> findAllUsersActive() {
-        List<UserResponse> users = userRepository.findByActiveTrue()
+    public List<UserResponse> findAllActive() {
+        return userRepository.findByActiveTrue()
                 .stream()
                 .map(mapper::toResponse)
                 .toList();
-
-        if (users.isEmpty()) {
-            throw new NotFoundException("Users not found.");
-        }
-
-        return users;
     }
 
     @Override
     public UserResponse findById(Long id) {
-        User user = userRepository.findById(id)
+        return userRepository.findById(id)
+                .map(mapper::toResponse)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
-
-        return mapper.toResponse(user);
     }
 
     @Override
     public UserResponse findByEmail(String email) {
-        User userDB = userRepository.findByEmail(email);
-        if (userDB != null) {
-            return mapper.toResponse(userDB);
-        } else {
-            throw new NotFoundException("User not found");
-        }
+        return userRepository.findByEmail(email)
+                .map(mapper::toResponse)
+                .orElseThrow(() -> new NotFoundException("User not found with email: " + email));
     }
 
     @Override
@@ -74,16 +63,10 @@ public class UserServiceImpl implements UserService {
             throw new ConflictException("Email already exists.");
         }
 
-        User user = new User();
-        user.setFirstName(request.firstName());
-        user.setLastName(request.lastName());
-        user.setPassword(passwordEncoder.encode(request.password()));
-        user.setEmail(request.email());
-        user.setActive(true);
-        user.setRole(Role.CUSTOMER);
+        String passwordCrypt = passwordEncoder.encode(request.password());
+        User newUser = mapper.toEntity(request, passwordCrypt);
 
-        User saved = userRepository.save(user);
-        return new UserResponse(saved.getId(), saved.getFirstName(), saved.getLastName(), saved.getEmail());
+        return mapper.toResponse(userRepository.save(newUser));
     }
 
     @Override
@@ -91,17 +74,17 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found."));
 
-        if (!user.getEmail().equals(request.email()) && userRepository.existsByEmail(request.email())) {
+        if (userRepository.existsByEmailAndIdNot(request.email(), id)) {
             throw new ConflictException("Email already registered");
         }
 
-        user.setFirstName(request.firstName());
-        user.setLastName(request.lastName());
-        user.setEmail(request.email());
-        user.setPassword(passwordEncoder.encode(request.password()));
+        mapper.updateEntity(user, request);
 
-        User saved = userRepository.save(user);
-        return mapper.toResponse(saved);
+        if (request.password() != null && !request.password().isBlank()) {
+            user.setPassword(passwordEncoder.encode(request.password()));
+        }
+
+        return mapper.toResponse(userRepository.save(user));
     }
 
     @Override
