@@ -36,11 +36,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> findAllActive() {
-        return userRepository.findByActiveTrue()
-                .stream()
-                .map(mapper::toResponse)
-                .toList();
+    public Page<UserResponse> findAllActive(Pageable pageable) {
+        return userRepository.findByActiveTrue(pageable)
+                .map(mapper::toResponse);
     }
 
     @Override

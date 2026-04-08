@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface UserService {
     Page<UserResponse> findAll(Pageable pageable);
-    List<UserResponse> findAllActive();
+    Page<UserResponse> findAllActive(Pageable pageable);
     UserResponse findById(Long id);
     UserResponse findByEmail(String email);
     UserResponse create(CreateUserRequest user);

@@ -16,13 +16,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "Users", description = "Operations related to users")
 @RestController
 @RequestMapping("/api/v1/users")
+@Validated
 public class UserController {
 
     private final UserService userService;
@@ -37,27 +37,30 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     @GetMapping
-    public ResponseEntity<PagedModel<UserResponse>> findAll(
+    public ResponseEntity<?> findAll(@RequestParam(required = false) Boolean active,
             @Parameter(hidden = true) Pageable pageable) {
-        Page<UserResponse> page = userService.findAll(pageable);
-        return ResponseEntity.ok(new PagedModel<>(page));
-    }
 
-    @Operation(summary = "Get all users active")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
-    })
-    @GetMapping("/actives")
-    public ResponseEntity<List<UserResponse>> findAllUsersActive(
-            @Parameter(hidden = true) Pageable pageable) {
-        return ResponseEntity.ok(userService.findAllActive());
+        Page<UserResponse> page;
+
+        if (active == null) {
+            page = userService.findAll(pageable);
+            return ResponseEntity.ok(new PagedModel<>(page));
+        }
+
+        if (active) {
+            page = userService.findAllActive(pageable);
+            return ResponseEntity.ok(new PagedModel<>(page));
+        }
+
+        page = userService.findAll(pageable);
+        return ResponseEntity.ok(new PagedModel<>(page));
     }
 
     @Operation(summary = "Get user by id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
+            @ApiResponse(responseCode = "200", description = "User retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "404", description = "User not found")
     })
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> findById(@PathVariable @Positive Long id) {
@@ -66,38 +69,42 @@ public class UserController {
 
     @Operation(summary = "Get user by email")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
+            @ApiResponse(responseCode = "200", description = "User retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "404", description = "User not found")
     })
-    @GetMapping("/search")
+    @GetMapping("/by-email")
     public ResponseEntity<UserResponse> findByEmail(@RequestParam String email) {
         return ResponseEntity.ok(userService.findByEmail(email));
     }
 
-    @Operation(summary = "Insert a new user")
+    @Operation(summary = "Create a new user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Users retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
+            @ApiResponse(responseCode = "201", description = "User created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "409", description = "Email already registered")
     })
     @PostMapping
     public ResponseEntity<UserResponse> create(@Valid @RequestBody CreateUserRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(request));
     }
 
-    @Operation(summary = "Update user")
+    @Operation(summary = "Update a user")
     @PutMapping("/{id}")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
+            @ApiResponse(responseCode = "200", description = "User updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "409", description = "Email already registered")
     })
     public ResponseEntity<UserResponse> update(@PathVariable @Positive Long id,
-                                               @Valid @RequestBody UpdateUserRequest user) {
-        return ResponseEntity.ok(userService.update(id, user));
+                                               @Valid @RequestBody UpdateUserRequest request) {
+        return ResponseEntity.ok(userService.update(id, request));
     }
 
-    @Operation(summary = "Delete user")
+    @Operation(summary = "Delete a user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+            @ApiResponse(responseCode = "200", description = "User retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @DeleteMapping("/{id}")
@@ -105,5 +112,4 @@ public class UserController {
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
-
 }
