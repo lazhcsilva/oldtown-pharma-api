@@ -130,7 +130,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public org.springframework.http.ResponseEntity<HttpErrorResponse> handleGenericException(
+    public ResponseEntity<HttpErrorResponse> handleGenericException(
             Exception ex,
             HttpServletRequest request) {
 
@@ -145,7 +145,7 @@ public class GlobalExceptionHandler {
                 null
         );
 
-        return org.springframework.http.ResponseEntity.status(status).body(response);
+        return ResponseEntity.status(status).body(response);
     }
 
     private String formatFieldError(FieldError error) {
