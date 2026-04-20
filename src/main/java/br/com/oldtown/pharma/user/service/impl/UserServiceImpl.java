@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
         mapper.updateEntity(user, request);
 
         if (request.password() != null && !request.password().isBlank()) {
-            user.setPassword(passwordEncoder.encode(request.password()));
+            user.setPasswordHash(passwordEncoder.encode(request.password()));
         }
 
         return mapper.toResponse(userRepository.save(user));
@@ -102,12 +102,12 @@ public class UserServiceImpl implements UserService {
 
         validatePasswords(request, user);
 
-        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
     }
 
     private void validatePasswords(ChangePasswordRequest request, User user) {
-        if (!validatePassword(request.oldPassword(), user.getPassword())) {
+        if (!validatePassword(request.oldPassword(), user.getPasswordHash())) {
             throw new BadRequestException("Old password is incorrect.");
         }
 
@@ -115,7 +115,7 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException("Passwords do not match.");
         }
 
-        if (validatePassword(request.newPassword(), user.getPassword())) {
+        if (validatePassword(request.newPassword(), user.getPasswordHash())) {
             throw new ConflictException("New password must be different from the old password.");
         }
 

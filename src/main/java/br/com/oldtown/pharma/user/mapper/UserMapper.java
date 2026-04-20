@@ -20,7 +20,7 @@ public class UserMapper {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getEmail(),
-                Role.CUSTOMER
+                user.getRole()
         );
     }
 
@@ -29,9 +29,7 @@ public class UserMapper {
                 request.firstName(),
                 request.lastName(),
                 request.email(),
-                passwordCrypt,
-                Role.CUSTOMER,
-                true
+                passwordCrypt
         );
     }
 

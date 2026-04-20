@@ -5,6 +5,7 @@ import br.com.oldtown.pharma.prescription.Prescription;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class User {
     private String email;
 
     @Column(nullable = false)
-    private String password;
+    private String passwordHash;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
@@ -34,6 +35,16 @@ public class User {
 
     @Column(nullable = false)
     private boolean active;
+
+    @Column(nullable = false)
+    private boolean locked;
+
+    private Integer failedLoginAttempts;
+
+    private LocalDateTime lastLoginAt;
+    private LocalDateTime passwordChangedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "customer")
     @JsonIgnore
@@ -46,13 +57,19 @@ public class User {
     public User() {
     }
 
-    public User(String firstName, String lastName, String email, String password, Role role, boolean active) {
+    public User(String firstName, String lastName, String email, String passwordHash) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.password = password;
-        this.role = role;
-        this.active = active;
+        this.passwordHash = passwordHash;
+        this.role = Role.CUSTOMER;
+        this.active = true;
+        this.locked = true;
+        this.failedLoginAttempts = 0;
+        this.lastLoginAt = null;
+        this.passwordChangedAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -87,12 +104,12 @@ public class User {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public Role getRole() {
@@ -119,4 +136,31 @@ public class User {
         return prescriptions;
     }
 
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
+    public Integer getFailedLoginAttempts() {
+        return failedLoginAttempts;
+    }
+
+    public LocalDateTime getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public LocalDateTime getPasswordChangedAt() {
+        return passwordChangedAt;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 }
