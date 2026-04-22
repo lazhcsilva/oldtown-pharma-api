@@ -91,7 +91,7 @@ public class UserController {
     }
 
     @Operation(summary = "Update a user")
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request"),
