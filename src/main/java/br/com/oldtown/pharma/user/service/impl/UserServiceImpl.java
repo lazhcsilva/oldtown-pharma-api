@@ -15,8 +15,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -30,17 +32,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserResponse> findAll(Pageable pageable) {
-        // Using stream to map entities to DTOs to avoid exposing internal model
-        return userRepository.findAll(pageable)
-                .map(mapper::toResponse);
-    }
-
-    @Override
-    public Page<UserResponse> findAllActive(Pageable pageable) {
-        // Using stream to map entities to DTOs to avoid exposing internal model
-        return userRepository.findByActiveTrue(pageable)
-                .map(mapper::toResponse);
+    public Page<UserResponse> findAll(Pageable pageable, Boolean active) {
+        if (active == null) {
+            return userRepository.findAll(pageable)
+                    .map(mapper::toResponse);
+        } else {
+            return (active
+                    ? userRepository.findByActiveTrue(pageable)
+                    : userRepository.findByActiveFalse(pageable))
+                    .map(mapper::toResponse);
+        }
     }
 
     @Override
@@ -72,9 +73,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse update(Long id, UpdateUserRequest request) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("User not found."));
+                .orElseThrow(() -> new NotFoundException("User not found with id:" + id));
 
-        if (userRepository.existsByEmailAndIdNot(request.email(), id)) {
+        if (!user.getEmail().equals(request.email()) && userRepository.existsByEmail(request.email())) {
             throw new ConflictException("Email already registered");
         }
 
