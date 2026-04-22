@@ -13,6 +13,8 @@ import br.com.oldtown.pharma.user.repository.UserRepository;
 import br.com.oldtown.pharma.user.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,10 +32,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserResponse> findAll(Pageable pageable) {
+    public Page<UserResponse> findAll(Boolean active, Pageable pageable) {
         // Using stream to map entities to DTOs to avoid exposing internal model
-        return userRepository.findAll(pageable)
-                .map(mapper::toResponse);
+
+        if (active) {
+            findAllActive(pageable);
+        } else if (!active) {
+            findAllInactive(pageable);
+        }
+
+        return userRepository.findAll(pageable).map(mapper::toResponse);
     }
 
     @Override

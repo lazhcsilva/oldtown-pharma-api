@@ -41,20 +41,7 @@ public class UserController {
     @GetMapping
     public ResponseEntity<PagedModel<UserResponse>> findAll(@RequestParam(required = false) Boolean active,
             @Parameter(hidden = true) Pageable pageable) {
-
-        Page<UserResponse> page;
-
-        if (active == null) {
-            page = userService.findAll(pageable);
-            return ResponseEntity.ok(new PagedModel<>(page));
-        }
-
-        if (active) {
-            page = userService.findAllActive(pageable);
-            return ResponseEntity.ok(new PagedModel<>(page));
-        }
-
-        page = userService.findAll(pageable);
+        Page<UserResponse> page = userService.findAll(active, pageable);
         return ResponseEntity.ok(new PagedModel<>(page));
     }
 
@@ -106,7 +93,7 @@ public class UserController {
 
     @Operation(summary = "Delete a user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "User retrieved successfully"),
+            @ApiResponse(responseCode = "204", description = "User deleted successfully"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @DeleteMapping("/{id}")

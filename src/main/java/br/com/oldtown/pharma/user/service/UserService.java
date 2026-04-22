@@ -16,7 +16,7 @@ public interface UserService {
      * @param pageable pagination information
      * @return a paginated list of users
      */
-    Page<UserResponse> findAll(Pageable pageable);
+    Page<UserResponse> findAll(Boolean active, Pageable pageable);
 
     /**
      * Retrieves only active users with pagination.
