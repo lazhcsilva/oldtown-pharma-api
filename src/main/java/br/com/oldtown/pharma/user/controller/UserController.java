@@ -38,7 +38,7 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     @GetMapping
-    public ResponseEntity<?> findAll(@RequestParam(required = false) Boolean active,
+    public ResponseEntity<PagedModel<UserResponse>> findAll(@RequestParam(required = false) Boolean active,
             @Parameter(hidden = true) Pageable pageable) {
 
         Page<UserResponse> page;
@@ -116,7 +116,7 @@ public class UserController {
 
     @Operation(summary = "Change user password")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Password changed successfully."),
+            @ApiResponse(responseCode = "200", description = "Password changed successfully."),
             @ApiResponse(responseCode = "400", description = "Invalid request"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
