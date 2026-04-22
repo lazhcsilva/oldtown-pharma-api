@@ -44,6 +44,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Page<UserResponse> findAllInactive(Pageable pageable) {
+        // Using stream to map entities to DTOs to avoid exposing internal model
+        return userRepository.findByActiveFalse(pageable)
+                .map(mapper::toResponse);
+    }
+
+    @Override
     public UserResponse findById(Long id) {
         return userRepository.findById(id)
                 .map(mapper::toResponse)

@@ -27,6 +27,14 @@ public interface UserService {
     Page<UserResponse> findAllActive(Pageable pageable);
 
     /**
+     * Retrieves only active users with pagination.
+     *
+     * @param pageable pagination information
+     * @return a paginated list of inactive users
+     */
+    Page<UserResponse> findAllInactive(Pageable pageable);
+
+    /**
      * Finds a user by its ID.
      *
      * @param id user identifier
