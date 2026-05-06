@@ -81,17 +81,18 @@ public class ProductController {
     @Operation(summary = "Update a product")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
     })
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> update(@PathVariable @Positive Long id,
-                                                  @RequestBody UpdateProductRequest request) {
+                                                  @Valid @RequestBody UpdateProductRequest request) {
         return ResponseEntity.ok(productService.update(id, request));
     }
 
     @Operation(summary = "Delete a product")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Product deleted successfully"),
+            @ApiResponse(responseCode = "204", description = "Product deleted successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     @DeleteMapping("/{id}")
