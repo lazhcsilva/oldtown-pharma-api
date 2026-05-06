@@ -1,4 +1,4 @@
-package br.com.oldtown.pharma.infrastructure.parameter.service;
+package br.com.oldtown.pharma.infrastructure.parameter.repository;
 
 import br.com.oldtown.pharma.infrastructure.parameter.entity.SystemParameter;
 import br.com.oldtown.pharma.infrastructure.parameter.entity.SystemParameterKey;

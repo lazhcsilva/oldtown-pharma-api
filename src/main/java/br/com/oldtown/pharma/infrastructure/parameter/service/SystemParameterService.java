@@ -1,8 +1,8 @@
-package br.com.oldtown.pharma.infrastructure.parameter.repository;
+package br.com.oldtown.pharma.infrastructure.parameter.service;
 
 import br.com.oldtown.pharma.infrastructure.parameter.entity.SystemParameter;
 import br.com.oldtown.pharma.infrastructure.parameter.entity.SystemParameterKey;
-import br.com.oldtown.pharma.infrastructure.parameter.service.SystemParameterRepository;
+import br.com.oldtown.pharma.infrastructure.parameter.repository.SystemParameterRepository;
 import br.com.oldtown.pharma.shared.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 
