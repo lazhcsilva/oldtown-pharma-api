@@ -6,18 +6,16 @@ import br.com.oldtown.pharma.product.dto.CreateProductRequest;
 import br.com.oldtown.pharma.product.dto.ProductResponse;
 import br.com.oldtown.pharma.product.dto.UpdateProductRequest;
 import br.com.oldtown.pharma.product.entity.Product;
+import br.com.oldtown.pharma.product.entity.ProductType;
 import br.com.oldtown.pharma.product.mapper.ProductMapper;
 import br.com.oldtown.pharma.product.repository.ProductRepository;
 import br.com.oldtown.pharma.product.service.ProductService;
-import br.com.oldtown.pharma.shared.exception.BadRequestException;
 import br.com.oldtown.pharma.shared.exception.ConflictException;
 import br.com.oldtown.pharma.shared.exception.NotFoundException;
+import br.com.oldtown.pharma.shared.utils.Util;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.util.Optional;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -61,7 +59,22 @@ public class ProductServiceImpl implements ProductService {
         Category category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new NotFoundException("Category not found."));
 
-        Product product = mapper.toEntity(request, category);
+        Product product;
+
+        if (request.productType() == ProductType.MEDICINE) {
+            if (request.medicineDetails() == null) {
+                throw new IllegalArgumentException("Medicine details are required");
+            }
+
+            product = mapper.toMedicineProductEntity(request, category);
+        } else {
+            if (request.medicineDetails() != null) {
+                throw new ConflictException("Only medicines can have medicine details");
+            }
+
+            product = mapper.toCommonProductEntity(request, category);
+        }
+
         return mapper.toResponse(productRepository.save(product));
     }
 
@@ -87,5 +100,22 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Product not found."));
         productRepository.delete(product);
+    }
+
+    private String createSku(String category, String product, String dosage, String presentation, String quantity,
+                             String manufacturer) {
+            String categoryPrefix = Util.getPrefix(category).toUpperCase();
+            String productPrefix = Util.getPrefix(product).toUpperCase();
+            String dosagePrefix = Util.getPrefix(dosage).toUpperCase();
+            String presentationPrefix = Util.getPrefix(presentation).toUpperCase();
+            String manufacturerPrefix = Util.getPrefix(manufacturer).toUpperCase();
+
+        return String.format(categoryPrefix + "-" +
+                productPrefix + "-" +
+                dosagePrefix + "-" +
+                presentationPrefix + "-" +
+                quantity + "-" +
+                manufacturerPrefix
+        );
     }
 }
