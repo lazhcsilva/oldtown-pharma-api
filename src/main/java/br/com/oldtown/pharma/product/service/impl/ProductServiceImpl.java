@@ -10,6 +10,7 @@ import br.com.oldtown.pharma.product.entity.ProductType;
 import br.com.oldtown.pharma.product.mapper.ProductMapper;
 import br.com.oldtown.pharma.product.repository.ProductRepository;
 import br.com.oldtown.pharma.product.service.ProductService;
+import br.com.oldtown.pharma.product.service.SkuGeneratorService;
 import br.com.oldtown.pharma.shared.exception.ConflictException;
 import br.com.oldtown.pharma.shared.exception.NotFoundException;
 import br.com.oldtown.pharma.shared.utils.Util;
@@ -23,12 +24,14 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper mapper;
+    private final SkuGeneratorService skuGeneratorService;
 
     public ProductServiceImpl(ProductRepository productRepository, ProductMapper mapper,
-                              CategoryRepository categoryRepository) {
+                              CategoryRepository categoryRepository, SkuGeneratorService skuGeneratorService) {
         this.productRepository = productRepository;
         this.mapper = mapper;
         this.categoryRepository = categoryRepository;
+        this.skuGeneratorService = skuGeneratorService;
     }
 
     @Override
@@ -75,6 +78,8 @@ public class ProductServiceImpl implements ProductService {
             product = mapper.toCommonProductEntity(request, category);
         }
 
+        product.setSku(skuGeneratorService.generate(product));
+
         return mapper.toResponse(productRepository.save(product));
     }
 
@@ -100,22 +105,5 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Product not found."));
         productRepository.delete(product);
-    }
-
-    private String createSku(String category, String product, String dosage, String presentation, String quantity,
-                             String manufacturer) {
-            String categoryPrefix = Util.getPrefix(category).toUpperCase();
-            String productPrefix = Util.getPrefix(product).toUpperCase();
-            String dosagePrefix = Util.getPrefix(dosage).toUpperCase();
-            String presentationPrefix = Util.getPrefix(presentation).toUpperCase();
-            String manufacturerPrefix = Util.getPrefix(manufacturer).toUpperCase();
-
-        return String.format(categoryPrefix + "-" +
-                productPrefix + "-" +
-                dosagePrefix + "-" +
-                presentationPrefix + "-" +
-                quantity + "-" +
-                manufacturerPrefix
-        );
     }
 }
