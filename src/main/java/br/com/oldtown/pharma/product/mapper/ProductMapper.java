@@ -35,7 +35,6 @@ public class ProductMapper {
                 request.description(),
                 request.manufacturer(),
                 request.price(),
-                generateSku(),
                 request.barcode(),
                 request.productType(),
                 category
@@ -48,7 +47,6 @@ public class ProductMapper {
                 request.description(),
                 request.manufacturer(),
                 request.price(),
-                generateSku(),
                 request.barcode(),
                 request.productType(),
                 category

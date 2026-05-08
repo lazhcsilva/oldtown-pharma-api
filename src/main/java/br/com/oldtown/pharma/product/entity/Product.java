@@ -56,14 +56,13 @@ public class Product {
     public Product() {
     }
 
-    public Product(String name, String description, String manufacturer, BigDecimal price, String sku,
+    public Product(String name, String description, String manufacturer, BigDecimal price,
                    String barcode, ProductType productType, MedicineDetails medicineDetails, Category category) {
         this.name = name;
         this.description = description;
         this.manufacturer = manufacturer;
         this.price = price;
         this.active = true;
-        this.sku = sku;
         this.barcode = barcode;
         this.productType = productType;
         this.createdAt = LocalDateTime.now();
@@ -72,14 +71,13 @@ public class Product {
         setMedicineDetails(medicineDetails);
     }
 
-    public Product(String name, String description, String manufacturer, BigDecimal price, String sku,
+    public Product(String name, String description, String manufacturer, BigDecimal price,
                    String barcode, ProductType productType, Category category) {
         this.name = name;
         this.description = description;
         this.manufacturer = manufacturer;
         this.price = price;
         this.active = true;
-        this.sku = sku;
         this.barcode = barcode;
         this.productType = productType;
         this.category = category;

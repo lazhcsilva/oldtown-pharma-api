@@ -10,7 +10,7 @@ public record ProductResponse(
         String description,
         String manufacturer,
         BigDecimal price,
-        Boolean controlled,
+        Boolean active,
         String sku,
         String barcode,
         String category,

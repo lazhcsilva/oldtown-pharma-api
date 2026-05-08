@@ -37,7 +37,6 @@ public record CreateProductRequest(
                 if (productType == ProductType.MEDICINE) {
                         return medicineDetails != null;
                 }
-
                 return true;
         }
 }
