@@ -13,7 +13,7 @@ public record CreateMedicineDetailsRequest(
         @NotNull(message = "Dosage is required")
         String dosage,
 
-        @NotNull(message = "")
+        @NotNull(message = "A unit of measurement is required")
         UnitMeasure unitMeasure,
 
         @NotNull(message = "Inform if product is controlled")
@@ -22,16 +22,16 @@ public record CreateMedicineDetailsRequest(
         @NotNull(message = "Presentation is required")
         ProductPresentation presentation,
 
-        @NotNull(message = "")
+        @NotNull(message = "Brand name is required")
         String brandName,
 
-        @NotNull(message = "")
+        @NotNull(message = "Generic name is required")
         String genericName,
 
         @NotNull(message = "Inform if product have expiration")
         Boolean expirationControlRequired,
 
-        @NotNull(message = "")
+        @NotNull(message = "Therapeutic class is required")
         TherapeuticClass therapeuticClass
 ) {
 }
