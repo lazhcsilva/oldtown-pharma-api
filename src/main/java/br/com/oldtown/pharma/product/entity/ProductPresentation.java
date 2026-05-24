@@ -10,7 +10,8 @@ public enum ProductPresentation {
     INJECTION("Injection"),
     DROPS("Drops"),
     SPRAY("Spray"),
-    SUSPENSION("Suspension");
+    SUSPENSION("Suspension"),
+    INHALER("Inhaler");;
 
     private final String description;
 

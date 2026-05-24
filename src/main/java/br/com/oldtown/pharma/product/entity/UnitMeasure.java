@@ -5,7 +5,8 @@ public enum UnitMeasure {
     MG("Milligram"),
     ML("Milliliter"),
     MCG_ML("Microgram per Milliliter"),
-    IU("International Unit");
+    IU("International Unit"),
+    MCG("Microgram");
 
     private final String description;
 
