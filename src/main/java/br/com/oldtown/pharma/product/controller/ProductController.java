@@ -71,7 +71,8 @@ public class ProductController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Product created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request"),
-            @ApiResponse(responseCode = "409", description = "Product already exists")
+            @ApiResponse(responseCode = "409", description = "Product already exists"),
+            @ApiResponse(responseCode = "500", description = "Connect")
     })
     @PostMapping
     public ResponseEntity<ProductResponse> create(@Valid @RequestBody CreateProductRequest request) {
