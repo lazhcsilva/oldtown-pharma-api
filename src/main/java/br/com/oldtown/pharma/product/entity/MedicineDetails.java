@@ -9,7 +9,7 @@ public class MedicineDetails {
     @Id
     private Long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "product_id")
     private Product product;

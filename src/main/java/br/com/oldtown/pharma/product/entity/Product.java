@@ -44,7 +44,8 @@ public class Product {
     @OneToOne(
             mappedBy = "product",
             cascade = CascadeType.ALL,
-            orphanRemoval = true
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
     )
     private MedicineDetails medicineDetails;
 

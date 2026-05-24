@@ -31,6 +31,7 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 null
         );
+        ex.printStackTrace();
 
         return ResponseEntity.status(status).body(response);
     }
@@ -47,7 +48,7 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 null
         );
-
+        ex.printStackTrace();
         return ResponseEntity.status(status).body(response);
     }
 
@@ -63,7 +64,7 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 null
         );
-
+        ex.printStackTrace();
         return ResponseEntity.status(status).body(response);
     }
 
@@ -86,7 +87,7 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 details
         );
-
+        ex.printStackTrace();
         return ResponseEntity.status(status).body(response);
     }
 
@@ -108,7 +109,7 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 details
         );
-
+        ex.printStackTrace();
         return ResponseEntity.status(status).body(response);
     }
 
@@ -125,7 +126,7 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 null
         );
-
+        ex.printStackTrace();
         return ResponseEntity.status(status).body(response);
     }
 
@@ -144,7 +145,7 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 null
         );
-
+        ex.printStackTrace();
         return ResponseEntity.status(status).body(response);
     }
 
