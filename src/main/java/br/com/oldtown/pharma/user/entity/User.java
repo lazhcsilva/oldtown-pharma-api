@@ -54,16 +54,12 @@ public class User {
     @JsonIgnore
     private List<Prescription> prescriptions = new ArrayList<>();
 
-    public User() {
-    }
+    public User() {}
 
-    public User(String firstName, String lastName, String email, String passwordHash) {
+    public User(String firstName, String lastName, String email) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.passwordHash = passwordHash;
-        this.role = Role.CUSTOMER;
-        this.active = true;
         this.locked = true;
         this.failedLoginAttempts = 0;
         this.lastLoginAt = null;
