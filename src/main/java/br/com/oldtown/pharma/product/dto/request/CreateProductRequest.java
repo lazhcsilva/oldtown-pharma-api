@@ -1,4 +1,4 @@
-package br.com.oldtown.pharma.product.dto;
+package br.com.oldtown.pharma.product.dto.request;
 
 import br.com.oldtown.pharma.product.entity.ProductType;
 import jakarta.validation.constraints.*;

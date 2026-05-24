@@ -1,9 +1,8 @@
 package br.com.oldtown.pharma.product.mapper;
 
-import br.com.oldtown.pharma.category.mapper.CategoryMapper;
-import br.com.oldtown.pharma.product.dto.CreateProductRequest;
-import br.com.oldtown.pharma.product.dto.ProductResponse;
-import br.com.oldtown.pharma.product.dto.UpdateProductRequest;
+import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
+import br.com.oldtown.pharma.product.dto.response.ProductResponse;
+import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
 import br.com.oldtown.pharma.product.entity.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

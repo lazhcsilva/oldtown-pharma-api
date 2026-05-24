@@ -1,8 +1,8 @@
 package br.com.oldtown.pharma.product.controller;
 
-import br.com.oldtown.pharma.product.dto.CreateProductRequest;
-import br.com.oldtown.pharma.product.dto.ProductResponse;
-import br.com.oldtown.pharma.product.dto.UpdateProductRequest;
+import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
+import br.com.oldtown.pharma.product.dto.response.ProductResponse;
+import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
 import br.com.oldtown.pharma.product.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

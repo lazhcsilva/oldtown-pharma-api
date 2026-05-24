@@ -1,8 +1,8 @@
 package br.com.oldtown.pharma.product.service;
 
-import br.com.oldtown.pharma.product.dto.CreateProductRequest;
-import br.com.oldtown.pharma.product.dto.ProductResponse;
-import br.com.oldtown.pharma.product.dto.UpdateProductRequest;
+import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
+import br.com.oldtown.pharma.product.dto.response.ProductResponse;
+import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
