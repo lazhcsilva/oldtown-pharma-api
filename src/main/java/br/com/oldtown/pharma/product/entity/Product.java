@@ -2,6 +2,8 @@ package br.com.oldtown.pharma.product.entity;
 
 import br.com.oldtown.pharma.category.entity.Category;
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -46,42 +48,17 @@ public class Product {
     )
     private MedicineDetails medicineDetails;
 
+    @CreatedDate
     private LocalDateTime createdAt;
+
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    public Product() {
-    }
-
-    public Product(String name, String description, String manufacturer, BigDecimal price,
-                   String barcode, ProductType productType, MedicineDetails medicineDetails, Category category) {
-        this.name = name;
-        this.description = description;
-        this.manufacturer = manufacturer;
-        this.price = price;
-        this.active = true;
-        this.barcode = barcode;
-        this.productType = productType;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        this.category = category;
-        setMedicineDetails(medicineDetails);
-    }
-
-    public Product(String name, String description, String manufacturer, BigDecimal price,
-                   String barcode, ProductType productType, Category category) {
-        this.name = name;
-        this.description = description;
-        this.manufacturer = manufacturer;
-        this.price = price;
-        this.active = true;
-        this.barcode = barcode;
-        this.productType = productType;
-        this.category = category;
-    }
+    public Product() {}
 
     public Long getId() {
         return id;

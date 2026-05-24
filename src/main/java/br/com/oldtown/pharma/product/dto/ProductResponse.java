@@ -1,5 +1,6 @@
 package br.com.oldtown.pharma.product.dto;
 
+import br.com.oldtown.pharma.category.dto.CategoryResponse;
 import br.com.oldtown.pharma.product.entity.ProductType;
 
 import java.math.BigDecimal;
@@ -13,7 +14,7 @@ public record ProductResponse(
         Boolean active,
         String sku,
         String barcode,
-        String category,
+        CategoryResponse category,
         ProductType productType,
         MedicineDetailsResponse medicineDetails
 ) {
