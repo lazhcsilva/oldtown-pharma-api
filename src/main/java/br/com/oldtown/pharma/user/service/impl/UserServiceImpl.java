@@ -7,6 +7,7 @@ import br.com.oldtown.pharma.user.dto.ChangePasswordRequest;
 import br.com.oldtown.pharma.user.dto.CreateUserRequest;
 import br.com.oldtown.pharma.user.dto.UpdateUserRequest;
 import br.com.oldtown.pharma.user.dto.UserResponse;
+import br.com.oldtown.pharma.user.entity.Role;
 import br.com.oldtown.pharma.user.entity.User;
 import br.com.oldtown.pharma.user.mapper.UserMapper;
 import br.com.oldtown.pharma.user.repository.UserRepository;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @Transactional
@@ -65,7 +68,10 @@ public class UserServiceImpl implements UserService {
         }
 
         String passwordCrypt = passwordEncoder.encode(request.password());
-        User newUser = mapper.toEntity(request, passwordCrypt);
+
+        User newUser = mapper.toEntity(request);
+        newUser.setPasswordHash(passwordCrypt);
+        newUser.setRole(Role.CUSTOMER);
 
         return mapper.toResponse(userRepository.save(newUser));
     }
@@ -79,7 +85,7 @@ public class UserServiceImpl implements UserService {
             throw new ConflictException("Email already registered");
         }
 
-        mapper.updateEntity(user, request);
+        user = mapper.toUpdateEntity(user, request);
 
         if (request.password() != null && !request.password().isBlank()) {
             user.setPasswordHash(passwordEncoder.encode(request.password()));
