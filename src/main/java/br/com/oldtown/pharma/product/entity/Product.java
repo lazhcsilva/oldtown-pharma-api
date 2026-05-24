@@ -1,15 +1,10 @@
 package br.com.oldtown.pharma.product.entity;
 
 import br.com.oldtown.pharma.category.entity.Category;
-import br.com.oldtown.pharma.order.entity.OrderItem;
-import br.com.oldtown.pharma.prescription.Prescription;
-import br.com.oldtown.pharma.stock.Stock;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "products")
@@ -32,42 +27,59 @@ public class Product {
     private BigDecimal price;
 
     @Column(nullable = false)
-    private boolean controlled;
-
-    @Column(nullable = false)
-    private boolean requiresPrescription;
-
-    @Column(nullable = false)
     private boolean active;
+
+    @Column(nullable = false)
+    private String sku;
+
+    @Column(nullable = false)
+    private String barcode;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ProductType productType;
+
+    @OneToOne(
+            mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private MedicineDetails medicineDetails;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @OneToOne(mappedBy = "product")
-    @JsonIgnore
-    private Stock stock;
-
-    @OneToMany(mappedBy = "product")
-    @JsonIgnore
-    private List<OrderItem> orderItems = new ArrayList<>();
-
-    @OneToMany(mappedBy = "product")
-    @JsonIgnore
-    private List<Prescription> prescriptions = new ArrayList<>();
-
     public Product() {
     }
 
-    public Product(String name, String description, String manufacturer, BigDecimal price, boolean controlled,
-                   boolean requiresPrescription, boolean active, Category category) {
+    public Product(String name, String description, String manufacturer, BigDecimal price,
+                   String barcode, ProductType productType, MedicineDetails medicineDetails, Category category) {
         this.name = name;
         this.description = description;
         this.manufacturer = manufacturer;
         this.price = price;
-        this.controlled = controlled;
-        this.requiresPrescription = requiresPrescription;
-        this.active = active;
+        this.active = true;
+        this.barcode = barcode;
+        this.productType = productType;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+        this.category = category;
+        setMedicineDetails(medicineDetails);
+    }
+
+    public Product(String name, String description, String manufacturer, BigDecimal price,
+                   String barcode, ProductType productType, Category category) {
+        this.name = name;
+        this.description = description;
+        this.manufacturer = manufacturer;
+        this.price = price;
+        this.active = true;
+        this.barcode = barcode;
+        this.productType = productType;
         this.category = category;
     }
 
@@ -111,22 +123,6 @@ public class Product {
         this.price = price;
     }
 
-    public boolean isControlled() {
-        return controlled;
-    }
-
-    public void setControlled(boolean controlled) {
-        this.controlled = controlled;
-    }
-
-    public boolean isRequiresPrescription() {
-        return requiresPrescription;
-    }
-
-    public void setRequiresPrescription(boolean requiresPrescription) {
-        this.requiresPrescription = requiresPrescription;
-    }
-
     public boolean isActive() {
         return active;
     }
@@ -135,27 +131,63 @@ public class Product {
         this.active = active;
     }
 
+    public String getSku() {
+        return sku;
+    }
+
+    public void setSku(String sku) {
+        this.sku = sku;
+    }
+
+    public String getBarcode() {
+        return barcode;
+    }
+
+    public void setBarcode(String barcode) {
+        this.barcode = barcode;
+    }
+
+    public ProductType getProductType() {
+        return productType;
+    }
+
+    public void setProductType(ProductType productType) {
+        this.productType = productType;
+    }
+
+    public MedicineDetails getMedicineDetails() {
+        return medicineDetails;
+    }
+
+    public void setMedicineDetails(MedicineDetails medicineDetails) {
+        this.medicineDetails = medicineDetails;
+
+        if (medicineDetails != null) {
+            medicineDetails.setProduct(this);
+        }
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
     public Category getCategory() {
         return category;
     }
 
     public void setCategory(Category category) {
         this.category = category;
-    }
-
-    public Stock getStock() {
-        return stock;
-    }
-
-    public void setStock(Stock stock) {
-        this.stock = stock;
-    }
-
-    public List<OrderItem> getOrderItems() {
-        return orderItems;
-    }
-
-    public List<Prescription> getPrescriptions() {
-        return prescriptions;
     }
 }
