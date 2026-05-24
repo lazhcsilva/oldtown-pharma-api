@@ -64,7 +64,7 @@ public class CategoryServiceImpl implements CategoryService {
             throw new ConflictException("Category already exists");
         }
 
-        mapper.updateEntity(category, request);
+        category = mapper.toUpdateEntity(request);
 
         Category savedCategory = categoryRepository.save(category);
 
