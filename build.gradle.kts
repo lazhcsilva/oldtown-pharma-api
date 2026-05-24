@@ -24,9 +24,14 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
     implementation("org.springframework.boot:spring-boot-starter-validation:4.0.4")
     implementation("org.springframework.security:spring-security-core:7.0.3")
+    implementation("org.mapstruct:mapstruct:1.6.3")
+
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
+
     runtimeOnly("com.h2database:h2")
 }
 
