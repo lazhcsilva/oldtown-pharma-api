@@ -2,9 +2,9 @@ package br.com.oldtown.pharma.product.service.impl;
 
 import br.com.oldtown.pharma.category.entity.Category;
 import br.com.oldtown.pharma.category.repository.CategoryRepository;
-import br.com.oldtown.pharma.product.dto.CreateProductRequest;
-import br.com.oldtown.pharma.product.dto.ProductResponse;
-import br.com.oldtown.pharma.product.dto.UpdateProductRequest;
+import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
+import br.com.oldtown.pharma.product.dto.response.ProductResponse;
+import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
 import br.com.oldtown.pharma.product.entity.Product;
 import br.com.oldtown.pharma.product.entity.ProductType;
 import br.com.oldtown.pharma.product.mapper.ProductMapper;

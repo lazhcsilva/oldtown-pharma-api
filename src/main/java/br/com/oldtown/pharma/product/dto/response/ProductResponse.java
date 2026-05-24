@@ -1,4 +1,4 @@
-package br.com.oldtown.pharma.product.dto;
+package br.com.oldtown.pharma.product.dto.response;
 
 import br.com.oldtown.pharma.category.dto.CategoryResponse;
 import br.com.oldtown.pharma.product.entity.ProductType;
