@@ -26,7 +26,17 @@ public class Product {
     private String manufacturer;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    private BigDecimal costPrice;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal originalPrice;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal promotionalPrice;
+
+    private LocalDateTime promotionStartDate;
+
+    private LocalDateTime promotionEndDate;
 
     @Column(nullable = false)
     private boolean active;
@@ -93,12 +103,28 @@ public class Product {
         this.manufacturer = manufacturer;
     }
 
-    public BigDecimal getPrice() {
-        return price;
+    public BigDecimal getCostPrice() {
+        return costPrice;
     }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
+    public void setCostPrice(BigDecimal costPrice) {
+        this.costPrice = costPrice;
+    }
+
+    public BigDecimal getOriginalPrice() {
+        return originalPrice;
+    }
+
+    public void setOriginalPrice(BigDecimal originalPrice) {
+        this.originalPrice = originalPrice;
+    }
+
+    public BigDecimal getPromotionalPrice() {
+        return promotionalPrice;
+    }
+
+    public void setPromotionalPrice(BigDecimal promotionalPrice) {
+        this.promotionalPrice = promotionalPrice;
     }
 
     public boolean isActive() {
@@ -167,5 +193,17 @@ public class Product {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public BigDecimal getCurrentPrice() {
+        LocalDateTime today = LocalDateTime.now();
+
+        if (promotionalPrice != null
+                && !today.isBefore(promotionStartDate)
+                && !today.isAfter(promotionEndDate)) {
+            return promotionalPrice;
+        }
+
+        return originalPrice;
     }
 }
