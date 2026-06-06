@@ -1,5 +1,6 @@
 package br.com.oldtown.pharma.product.controller;
 
+import br.com.oldtown.pharma.product.dto.request.ChangePriceRequest;
 import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
 import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
 import br.com.oldtown.pharma.product.dto.response.ProductResponse;
@@ -90,6 +91,18 @@ public class ProductController {
     public ResponseEntity<ProductResponse> update(@PathVariable @Positive Long id,
                                                   @Valid @RequestBody UpdateProductRequest request) {
         return ResponseEntity.ok(productService.update(id, request));
+    }
+
+    @Operation(summary = "Change price")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Update product price"),
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "404", description = "Product noy found")
+    })
+    @PatchMapping("/change-price/{id}")
+    public ResponseEntity<ProductResponse> changePrice(@PathVariable @Positive Long id,
+                                                       @Valid @RequestBody ChangePriceRequest request) {
+        return ResponseEntity.ok(productService.changePrice(id, request));
     }
 
     @Operation(summary = "Delete a product")

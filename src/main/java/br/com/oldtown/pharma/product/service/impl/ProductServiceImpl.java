@@ -2,6 +2,7 @@ package br.com.oldtown.pharma.product.service.impl;
 
 import br.com.oldtown.pharma.category.entity.Category;
 import br.com.oldtown.pharma.category.repository.CategoryRepository;
+import br.com.oldtown.pharma.product.dto.request.ChangePriceRequest;
 import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
 import br.com.oldtown.pharma.product.dto.response.ProductResponse;
 import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
@@ -119,12 +120,17 @@ public class ProductServiceImpl implements ProductService {
             throw new ConflictException("Product already exists.");
         }
 
-        Category category = categoryRepository.findById(request.categoryId())
-                .orElseThrow(() -> new NotFoundException("Category not found."));
-
         productMapper.toUpdateEntity(product, request);
+        product.setSku(skuGeneratorService.generate(product));
 
         return productMapper.toResponse(productRepository.save(product));
+    }
+
+    @Override
+    public ProductResponse changePrice(Long id, ChangePriceRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Product not found."));
+        return null;
     }
 
     @Override

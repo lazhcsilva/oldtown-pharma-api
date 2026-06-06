@@ -1,5 +1,6 @@
 package br.com.oldtown.pharma.product.service;
 
+import br.com.oldtown.pharma.product.dto.request.ChangePriceRequest;
 import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
 import br.com.oldtown.pharma.product.dto.response.ProductResponse;
 import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
@@ -13,5 +14,6 @@ public interface ProductService {
     ProductResponse findById(Long id);
     ProductResponse create(CreateProductRequest request);
     ProductResponse update(Long id, UpdateProductRequest request);
+    ProductResponse changePrice(Long id, ChangePriceRequest request);
     void delete(Long id);
 }
