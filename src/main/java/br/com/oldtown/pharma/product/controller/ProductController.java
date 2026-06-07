@@ -88,9 +88,9 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<ProductResponse> update(@PathVariable @Positive Long id,
-                                                  @Valid @RequestBody UpdateProductRequest request) {
-        return ResponseEntity.ok(productService.update(id, request));
+    public ResponseEntity<ProductResponse> updateBasicData(@PathVariable @Positive Long id,
+                                                           @Valid @RequestBody UpdateProductRequest request) {
+        return ResponseEntity.ok(productService.updateBasicData(id, request));
     }
 
     @Operation(summary = "Change price")

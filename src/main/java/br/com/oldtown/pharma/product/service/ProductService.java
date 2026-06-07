@@ -13,7 +13,7 @@ public interface ProductService {
     ProductResponse findByName(String name);
     ProductResponse findById(Long id);
     ProductResponse create(CreateProductRequest request);
-    ProductResponse update(Long id, UpdateProductRequest request);
+    ProductResponse updateBasicData(Long id, UpdateProductRequest request);
     ProductResponse changePrice(Long id, ChangePriceRequest request);
     void delete(Long id);
 }
