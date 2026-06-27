@@ -1,8 +1,6 @@
 package br.com.oldtown.pharma.product.dto.request;
 
-import jakarta.validation.constraints.*;
-
-import java.math.BigDecimal;
+import jakarta.validation.constraints.NotBlank;
 
 public record UpdateProductRequest(
         @NotBlank(message = "Name is required")
@@ -10,6 +8,5 @@ public record UpdateProductRequest(
 
         @NotBlank(message = "Description is required")
         String description
-
 ) {
 }

@@ -1,9 +1,11 @@
 package br.com.oldtown.pharma.product.controller;
 
-import br.com.oldtown.pharma.product.dto.request.ChangePriceRequest;
+import br.com.oldtown.pharma.product.dto.request.CreatePromotionalPriceRequest;
+import br.com.oldtown.pharma.product.dto.request.UpdatePriceRequest;
 import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
 import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
 import br.com.oldtown.pharma.product.dto.response.ProductResponse;
+import br.com.oldtown.pharma.product.dto.response.PromotionalPriceResponse;
 import br.com.oldtown.pharma.product.entity.ProductType;
 import br.com.oldtown.pharma.product.entity.TherapeuticClass;
 import br.com.oldtown.pharma.product.service.ProductService;
@@ -81,6 +83,18 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(request));
     }
 
+    @Operation(summary = "Create promotional price to product")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Promotional created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    @PatchMapping("/create-promotional-price/{id}")
+    public ResponseEntity<PromotionalPriceResponse> createPromotionalPrice(@Positive Long id,
+                                                                           @Valid @RequestBody CreatePromotionalPriceRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.createPromotionalPrice(id, request));
+    }
+
     @Operation(summary = "Update a product")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product updated successfully"),
@@ -99,10 +113,10 @@ public class ProductController {
             @ApiResponse(responseCode = "400", description = "Invalid request"),
             @ApiResponse(responseCode = "404", description = "Product noy found")
     })
-    @PatchMapping("/change-price/{id}")
-    public ResponseEntity<ProductResponse> changePrice(@PathVariable @Positive Long id,
-                                                       @Valid @RequestBody ChangePriceRequest request) {
-        return ResponseEntity.ok(productService.changePrice(id, request));
+    @PatchMapping("/update-price/{id}")
+    public ResponseEntity<ProductResponse> updatePrice(@PathVariable @Positive Long id,
+                                                       @Valid @RequestBody UpdatePriceRequest request) {
+        return ResponseEntity.ok(productService.updatePrice(id, request));
     }
 
     @Operation(summary = "Delete a product")

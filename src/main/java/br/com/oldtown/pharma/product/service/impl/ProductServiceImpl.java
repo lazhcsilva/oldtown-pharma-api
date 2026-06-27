@@ -2,10 +2,12 @@ package br.com.oldtown.pharma.product.service.impl;
 
 import br.com.oldtown.pharma.category.entity.Category;
 import br.com.oldtown.pharma.category.repository.CategoryRepository;
-import br.com.oldtown.pharma.product.dto.request.ChangePriceRequest;
+import br.com.oldtown.pharma.product.dto.request.CreatePromotionalPriceRequest;
+import br.com.oldtown.pharma.product.dto.request.UpdatePriceRequest;
 import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
 import br.com.oldtown.pharma.product.dto.response.ProductResponse;
 import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
+import br.com.oldtown.pharma.product.dto.response.PromotionalPriceResponse;
 import br.com.oldtown.pharma.product.entity.Product;
 import br.com.oldtown.pharma.product.entity.ProductType;
 import br.com.oldtown.pharma.product.mapper.ProductMapper;
@@ -20,6 +22,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -107,8 +111,21 @@ public class ProductServiceImpl implements ProductService {
 
         product.setCategory(category);
         product.setSku(skuGeneratorService.generate(product));
+        product.setCurrentPrice(product.getCurrentPrice());
 
         return productMapper.toResponse(productRepository.save(product));
+    }
+
+    @Override
+    public PromotionalPriceResponse createPromotionalPrice(Long id, CreatePromotionalPriceRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Product not found."));
+
+        product.setPromotionalPrice(request.promotionalPrice());
+        product.setPromotionStartDate(request.promotionStartDate());
+        product.setPromotionEndDate(request.promotionEndDate());
+
+        return productMapper.toResponsePromotionalPrice(productRepository.save(product));
     }
 
     @Override
@@ -127,7 +144,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse changePrice(Long id, ChangePriceRequest request) {
+    public ProductResponse updatePrice(Long id, UpdatePriceRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Product not found."));
         return null;

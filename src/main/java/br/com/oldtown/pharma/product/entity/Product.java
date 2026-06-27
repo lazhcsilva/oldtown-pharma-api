@@ -19,11 +19,13 @@ public class Product {
     @Column(nullable = false, length = 150)
     private String name;
 
-    @Column(length = 255)
+    @Column(length = 255, nullable = false)
     private String description;
 
     @Column(nullable = false, length = 150)
     private String manufacturer;
+
+    private BigDecimal currentPrice;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal costPrice;
@@ -31,7 +33,7 @@ public class Product {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal originalPrice;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2)
     private BigDecimal promotionalPrice;
 
     private LocalDateTime promotionStartDate;
@@ -195,6 +197,22 @@ public class Product {
         this.category = category;
     }
 
+    public LocalDateTime getPromotionStartDate() {
+        return promotionStartDate;
+    }
+
+    public void setPromotionStartDate(LocalDateTime promotionStartDate) {
+        this.promotionStartDate = promotionStartDate;
+    }
+
+    public LocalDateTime getPromotionEndDate() {
+        return promotionEndDate;
+    }
+
+    public void setPromotionEndDate(LocalDateTime promotionEndDate) {
+        this.promotionEndDate = promotionEndDate;
+    }
+
     public BigDecimal getCurrentPrice() {
         LocalDateTime today = LocalDateTime.now();
 
@@ -205,5 +223,9 @@ public class Product {
         }
 
         return originalPrice;
+    }
+
+    public void setCurrentPrice(BigDecimal currentPrice) {
+        this.currentPrice = currentPrice;
     }
 }
