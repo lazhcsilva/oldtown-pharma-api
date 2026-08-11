@@ -35,12 +35,12 @@ public class ProductSpecification {
 
     public static Specification<Product> priceGreaterThanOrEqual(BigDecimal minPrice) {
         return ((root, query, criteriaBuilder) ->
-                criteriaBuilder.greaterThanOrEqualTo(root.get("price"), minPrice));
+                criteriaBuilder.greaterThanOrEqualTo(root.get("currentPrice"), minPrice));
     }
 
     public static Specification<Product> priceLessThanOrEqual(BigDecimal maxPrice) {
         return ((root, query, criteriaBuilder) ->
-                criteriaBuilder.lessThanOrEqualTo(root.get("price"), maxPrice));
+                criteriaBuilder.lessThanOrEqualTo(root.get("currentPrice"), maxPrice));
     }
 
     public static Specification<Product> hasCategory(Long categoryId) {

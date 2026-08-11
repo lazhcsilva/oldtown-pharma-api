@@ -152,10 +152,9 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Product not found."));
 
-        if (request.originalPrice().compareTo(product.getCostPrice()) < 0) {
-            throw new InvalidPriceException("Price cannot be less than cost price");
-        } else if (request.originalPrice().compareTo(product.getCostPrice()) == 0) {
-            throw new InvalidPriceException("Price cannot be equal cost price");
+        if (request.originalPrice().compareTo(product.getCostPrice()) < 0
+                || request.originalPrice().compareTo(product.getCostPrice()) == 0) {
+            throw new InvalidPriceException("Price cannot be less or equal cost price");
         }
 
         BigDecimal previousPrice = product.getOriginalPrice();

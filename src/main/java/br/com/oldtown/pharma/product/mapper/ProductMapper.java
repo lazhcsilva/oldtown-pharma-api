@@ -34,7 +34,4 @@ public interface ProductMapper {
     Product toMedicineProductEntity(CreateProductRequest request);
 
     Product toUpdateEntity(@MappingTarget Product product, UpdateProductRequest request);
-
-    UpdatePriceResponse toUpdatedPrice(Product product, UpdatePriceRequest request);
-
 }

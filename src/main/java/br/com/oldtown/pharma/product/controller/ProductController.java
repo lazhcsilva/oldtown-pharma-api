@@ -54,7 +54,7 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) Long categoryId,
-            @PageableDefault(page = 0, size = 10, sort = "name", direction = Sort.Direction.ASC)
+            @PageableDefault(page = 0, size = 10, direction = Sort.Direction.ASC)
             Pageable pageable) {
         ProductSearchCriteria criteria = new ProductSearchCriteria(name, type, therapeuticClass, active,
                 minPrice, maxPrice, categoryId);
