@@ -25,13 +25,14 @@ public class Product {
     @Column(nullable = false, length = 150)
     private String manufacturer;
 
-    private BigDecimal currentPrice;
-
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal costPrice;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal originalPrice;
+
+    @Transient
+    private BigDecimal currentPrice;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal promotionalPrice;
@@ -215,17 +216,11 @@ public class Product {
 
     public BigDecimal getCurrentPrice() {
         LocalDateTime today = LocalDateTime.now();
-
-        if (promotionalPrice != null
-                && !today.isBefore(promotionStartDate)
-                && !today.isAfter(promotionEndDate)) {
+        if (promotionalPrice != null && promotionStartDate != null && promotionEndDate != null
+                && !today.isBefore(promotionStartDate) && !today.isAfter(promotionEndDate)) {
             return promotionalPrice;
         }
-
         return originalPrice;
     }
 
-    public void setCurrentPrice(BigDecimal currentPrice) {
-        this.currentPrice = currentPrice;
-    }
 }

@@ -6,6 +6,7 @@ import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
 import br.com.oldtown.pharma.product.dto.response.ProductResponse;
 import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
 import br.com.oldtown.pharma.product.dto.response.PromotionalPriceResponse;
+import br.com.oldtown.pharma.product.dto.response.UpdatePriceResponse;
 import br.com.oldtown.pharma.product.specification.ProductSearchCriteria;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,6 @@ public interface ProductService {
     ProductResponse create(CreateProductRequest request);
     PromotionalPriceResponse createPromotionalPrice(Long id, CreatePromotionalPriceRequest request);
     ProductResponse updateBasicData(Long id, UpdateProductRequest request);
-    ProductResponse updatePrice(Long id, UpdatePriceRequest request);
+    UpdatePriceResponse updatePrice(Long id, UpdatePriceRequest request);
     void delete(Long id);
 }

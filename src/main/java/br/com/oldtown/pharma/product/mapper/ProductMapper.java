@@ -1,9 +1,11 @@
 package br.com.oldtown.pharma.product.mapper;
 
 import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
+import br.com.oldtown.pharma.product.dto.request.UpdatePriceRequest;
 import br.com.oldtown.pharma.product.dto.response.ProductResponse;
 import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
 import br.com.oldtown.pharma.product.dto.response.PromotionalPriceResponse;
+import br.com.oldtown.pharma.product.dto.response.UpdatePriceResponse;
 import br.com.oldtown.pharma.product.entity.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -32,5 +34,7 @@ public interface ProductMapper {
     Product toMedicineProductEntity(CreateProductRequest request);
 
     Product toUpdateEntity(@MappingTarget Product product, UpdateProductRequest request);
+
+    UpdatePriceResponse toUpdatedPrice(Product product, UpdatePriceRequest request);
 
 }

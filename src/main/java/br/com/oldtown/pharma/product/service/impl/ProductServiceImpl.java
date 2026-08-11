@@ -8,6 +8,7 @@ import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
 import br.com.oldtown.pharma.product.dto.response.ProductResponse;
 import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
 import br.com.oldtown.pharma.product.dto.response.PromotionalPriceResponse;
+import br.com.oldtown.pharma.product.dto.response.UpdatePriceResponse;
 import br.com.oldtown.pharma.product.entity.Product;
 import br.com.oldtown.pharma.product.entity.ProductType;
 import br.com.oldtown.pharma.product.mapper.ProductMapper;
@@ -17,12 +18,14 @@ import br.com.oldtown.pharma.product.service.SkuGeneratorService;
 import br.com.oldtown.pharma.product.specification.ProductSearchCriteria;
 import br.com.oldtown.pharma.product.specification.ProductSpecification;
 import br.com.oldtown.pharma.shared.exception.ConflictException;
+import br.com.oldtown.pharma.shared.exception.InvalidPriceException;
 import br.com.oldtown.pharma.shared.exception.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Service
@@ -84,9 +87,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse findByName(String name) {
-        return productRepository.findByName(name)
+        ProductResponse productResponse = productRepository.findByName(name)
                 .map(productMapper::toResponse)
                 .orElseThrow(() -> new NotFoundException("Product not found with name: " + name));
+
+        return productResponse;
     }
 
     @Override
@@ -111,7 +116,6 @@ public class ProductServiceImpl implements ProductService {
 
         product.setCategory(category);
         product.setSku(skuGeneratorService.generate(product));
-        product.setCurrentPrice(product.getCurrentPrice());
 
         return productMapper.toResponse(productRepository.save(product));
     }
@@ -144,10 +148,21 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse updatePrice(Long id, UpdatePriceRequest request) {
+    public UpdatePriceResponse updatePrice(Long id, UpdatePriceRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Product not found."));
-        return null;
+
+        if (request.originalPrice().compareTo(product.getCostPrice()) < 0) {
+            throw new InvalidPriceException("Price cannot be less than cost price");
+        } else if (request.originalPrice().compareTo(product.getCostPrice()) == 0) {
+            throw new InvalidPriceException("Price cannot be equal cost price");
+        }
+
+        BigDecimal previousPrice = product.getOriginalPrice();
+        product.setOriginalPrice(request.originalPrice());
+        productRepository.save(product);
+
+        return new UpdatePriceResponse(id, previousPrice, product.getOriginalPrice());
     }
 
     @Override
