@@ -2,7 +2,7 @@ package br.com.oldtown.pharma.product.service;
 
 import br.com.oldtown.pharma.product.entity.MedicineDetails;
 import br.com.oldtown.pharma.product.entity.Product;
-import br.com.oldtown.pharma.product.entity.ProductType;
+import br.com.oldtown.pharma.product.entity.enums.ProductType;
 import br.com.oldtown.pharma.shared.utils.Util;
 import org.springframework.stereotype.Service;
 

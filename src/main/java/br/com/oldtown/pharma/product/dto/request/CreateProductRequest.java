@@ -1,6 +1,6 @@
 package br.com.oldtown.pharma.product.dto.request;
 
-import br.com.oldtown.pharma.product.entity.ProductType;
+import br.com.oldtown.pharma.product.entity.enums.ProductType;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;

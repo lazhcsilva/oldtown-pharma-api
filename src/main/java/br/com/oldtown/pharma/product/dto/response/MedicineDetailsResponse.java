@@ -1,8 +1,8 @@
 package br.com.oldtown.pharma.product.dto.response;
 
-import br.com.oldtown.pharma.product.entity.ProductPresentation;
-import br.com.oldtown.pharma.product.entity.TherapeuticClass;
-import br.com.oldtown.pharma.product.entity.UnitMeasure;
+import br.com.oldtown.pharma.product.entity.enums.ProductPresentation;
+import br.com.oldtown.pharma.product.entity.enums.TherapeuticClass;
+import br.com.oldtown.pharma.product.entity.enums.UnitMeasure;
 import br.com.oldtown.pharma.shared.utils.EnumResponse;
 
 public record MedicineDetailsResponse(

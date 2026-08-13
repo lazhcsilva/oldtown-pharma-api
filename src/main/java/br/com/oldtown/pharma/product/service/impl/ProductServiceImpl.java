@@ -2,24 +2,26 @@ package br.com.oldtown.pharma.product.service.impl;
 
 import br.com.oldtown.pharma.category.entity.Category;
 import br.com.oldtown.pharma.category.repository.CategoryRepository;
-import br.com.oldtown.pharma.product.dto.request.CreatePromotionalPriceRequest;
-import br.com.oldtown.pharma.product.dto.request.UpdatePriceRequest;
-import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
+import br.com.oldtown.pharma.product.dto.request.*;
+import br.com.oldtown.pharma.product.dto.response.DeletePromotionalPriceResponse;
 import br.com.oldtown.pharma.product.dto.response.ProductResponse;
-import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
 import br.com.oldtown.pharma.product.dto.response.PromotionalPriceResponse;
 import br.com.oldtown.pharma.product.dto.response.UpdatePriceResponse;
 import br.com.oldtown.pharma.product.entity.Product;
-import br.com.oldtown.pharma.product.entity.ProductType;
+import br.com.oldtown.pharma.product.entity.enums.ProductType;
+import br.com.oldtown.pharma.product.entity.enums.PromotionStatus;
 import br.com.oldtown.pharma.product.mapper.ProductMapper;
 import br.com.oldtown.pharma.product.repository.ProductRepository;
 import br.com.oldtown.pharma.product.service.ProductService;
 import br.com.oldtown.pharma.product.service.SkuGeneratorService;
 import br.com.oldtown.pharma.product.specification.ProductSearchCriteria;
 import br.com.oldtown.pharma.product.specification.ProductSpecification;
+import br.com.oldtown.pharma.shared.exception.BadRequestException;
 import br.com.oldtown.pharma.shared.exception.ConflictException;
 import br.com.oldtown.pharma.shared.exception.InvalidPriceException;
 import br.com.oldtown.pharma.shared.exception.NotFoundException;
+import br.com.oldtown.pharma.shared.utils.DateUtils;
+import br.com.oldtown.pharma.shared.utils.Util;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -125,11 +127,53 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Product not found."));
 
-        product.setPromotionalPrice(request.promotionalPrice());
-        product.setPromotionStartDate(request.promotionStartDate());
-        product.setPromotionEndDate(request.promotionEndDate());
+        if (!product.isActive()) {
+            throw new ConflictException("Inactive product");
+        } else if (request.promotionalPrice().compareTo(product.getCostPrice()) < 0
+                || request.promotionalPrice().compareTo(product.getCostPrice()) == 0) {
+            throw new InvalidPriceException("Price cannot be less or equal cost price");
+        }
 
-        return productMapper.toResponsePromotionalPrice(productRepository.save(product));
+        if (product.getStatus().equals(PromotionStatus.ACTIVE)
+                || product.getStatus().equals(PromotionStatus.SCHEDULED)) {
+            throw new ConflictException("Product has am active or scheduled promotion");
+        }
+
+        LocalDateTime startDate = DateUtils.parseToLocalDateTime(request.promotionStartDate());
+        LocalDateTime endDate = DateUtils.parseToLocalDateTime(request.promotionEndDate());
+
+        if (DateUtils.isEndDateAfterStartDate(startDate, endDate)) {
+            throw new BadRequestException("The end date cannot be earlier than the start date.");
+        } else {
+            product.setPromotionalPrice(request.promotionalPrice());
+            product.setPromotionStartDate(startDate);
+            product.setPromotionEndDate(endDate);
+            product.setStatus(PromotionStatus.SCHEDULED);
+
+            return productMapper.toResponsePromotionalPrice(productRepository.save(product));
+        }
+    }
+
+    @Override
+    public DeletePromotionalPriceResponse deletePromotionalPrice(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Product not found."));
+
+        if (!product.isActive()) {
+            throw new ConflictException("Inactive product");
+        }
+
+        if (product.getStatus().equals(PromotionStatus.ACTIVE)
+                || product.getStatus().equals(PromotionStatus.SCHEDULED)) {
+            product.setPromotionalPrice(null);
+            product.setPromotionStartDate(null);
+            product.setPromotionEndDate(null);
+            product.setStatus(PromotionStatus.NONE);
+        } else {
+            throw new ConflictException("There are no active or scheduled promotions for the product.");
+        }
+
+        return productMapper.toResponseDeletePromotionalPrice(productRepository.save(product));
     }
 
     @Override

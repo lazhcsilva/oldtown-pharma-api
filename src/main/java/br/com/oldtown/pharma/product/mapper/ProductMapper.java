@@ -2,6 +2,7 @@ package br.com.oldtown.pharma.product.mapper;
 
 import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
 import br.com.oldtown.pharma.product.dto.request.UpdatePriceRequest;
+import br.com.oldtown.pharma.product.dto.response.DeletePromotionalPriceResponse;
 import br.com.oldtown.pharma.product.dto.response.ProductResponse;
 import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
 import br.com.oldtown.pharma.product.dto.response.PromotionalPriceResponse;
@@ -21,6 +22,7 @@ public interface ProductMapper {
 
     ProductResponse toResponse(Product product);
     PromotionalPriceResponse toResponsePromotionalPrice(Product product);
+    DeletePromotionalPriceResponse toResponseDeletePromotionalPrice(Product product);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "category", ignore = true)

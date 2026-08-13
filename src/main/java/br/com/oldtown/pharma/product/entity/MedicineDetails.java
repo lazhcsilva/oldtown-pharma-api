@@ -1,5 +1,8 @@
 package br.com.oldtown.pharma.product.entity;
 
+import br.com.oldtown.pharma.product.entity.enums.ProductPresentation;
+import br.com.oldtown.pharma.product.entity.enums.TherapeuticClass;
+import br.com.oldtown.pharma.product.entity.enums.UnitMeasure;
 import jakarta.persistence.*;
 
 @Entity

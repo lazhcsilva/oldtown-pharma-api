@@ -1,8 +1,8 @@
 package br.com.oldtown.pharma.product.specification;
 
 import br.com.oldtown.pharma.product.entity.Product;
-import br.com.oldtown.pharma.product.entity.ProductType;
-import br.com.oldtown.pharma.product.entity.TherapeuticClass;
+import br.com.oldtown.pharma.product.entity.enums.ProductType;
+import br.com.oldtown.pharma.product.entity.enums.TherapeuticClass;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 

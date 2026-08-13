@@ -1,8 +1,8 @@
 package br.com.oldtown.pharma.product.dto.request;
 
-import br.com.oldtown.pharma.product.entity.ProductPresentation;
-import br.com.oldtown.pharma.product.entity.TherapeuticClass;
-import br.com.oldtown.pharma.product.entity.UnitMeasure;
+import br.com.oldtown.pharma.product.entity.enums.ProductPresentation;
+import br.com.oldtown.pharma.product.entity.enums.TherapeuticClass;
+import br.com.oldtown.pharma.product.entity.enums.UnitMeasure;
 import jakarta.validation.constraints.NotNull;
 
 public record CreateMedicineDetailsRequest(

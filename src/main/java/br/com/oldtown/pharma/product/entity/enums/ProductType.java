@@ -1,4 +1,4 @@
-package br.com.oldtown.pharma.product.entity;
+package br.com.oldtown.pharma.product.entity.enums;
 
 public enum ProductType {
     COMMON("Common"),

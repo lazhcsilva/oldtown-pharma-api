@@ -1,6 +1,8 @@
 package br.com.oldtown.pharma.product.entity;
 
 import br.com.oldtown.pharma.category.entity.Category;
+import br.com.oldtown.pharma.product.entity.enums.ProductType;
+import br.com.oldtown.pharma.product.entity.enums.PromotionStatus;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -53,6 +55,9 @@ public class Product {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ProductType productType;
+
+    @Enumerated(EnumType.STRING)
+    private PromotionStatus status = PromotionStatus.NONE;
 
     @OneToOne(
             mappedBy = "product",
@@ -223,4 +228,11 @@ public class Product {
         return originalPrice;
     }
 
+    public PromotionStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PromotionStatus status) {
+        this.status = status;
+    }
 }

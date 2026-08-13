@@ -1,14 +1,12 @@
 package br.com.oldtown.pharma.product.controller;
 
-import br.com.oldtown.pharma.product.dto.request.CreatePromotionalPriceRequest;
-import br.com.oldtown.pharma.product.dto.request.UpdatePriceRequest;
-import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
-import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
+import br.com.oldtown.pharma.product.dto.request.*;
+import br.com.oldtown.pharma.product.dto.response.DeletePromotionalPriceResponse;
 import br.com.oldtown.pharma.product.dto.response.ProductResponse;
 import br.com.oldtown.pharma.product.dto.response.PromotionalPriceResponse;
 import br.com.oldtown.pharma.product.dto.response.UpdatePriceResponse;
-import br.com.oldtown.pharma.product.entity.ProductType;
-import br.com.oldtown.pharma.product.entity.TherapeuticClass;
+import br.com.oldtown.pharma.product.entity.enums.ProductType;
+import br.com.oldtown.pharma.product.entity.enums.TherapeuticClass;
 import br.com.oldtown.pharma.product.service.ProductService;
 import br.com.oldtown.pharma.product.specification.ProductSearchCriteria;
 import io.swagger.v3.oas.annotations.Operation;
@@ -90,10 +88,21 @@ public class ProductController {
             @ApiResponse(responseCode = "400", description = "Invalid request"),
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
-    @PatchMapping("/create-promotional-price/{id}")
+    @PatchMapping("/{id}/create-promotion")
     public ResponseEntity<PromotionalPriceResponse> createPromotionalPrice(@Positive Long id,
                                                                            @Valid @RequestBody CreatePromotionalPriceRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.createPromotionalPrice(id, request));
+    }
+
+    @Operation(summary = "Delete promotional price to product")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Promotional deleted successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    @PatchMapping("/{id}/delete-promotion")
+    public ResponseEntity<DeletePromotionalPriceResponse> deletePromotionalPrice(@Positive Long id) {
+        return ResponseEntity.ok(productService.deletePromotionalPrice(id));
     }
 
     @Operation(summary = "Update a product")
