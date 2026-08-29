@@ -2,6 +2,7 @@ package br.com.oldtown.pharma.shared.handler;
 
 import br.com.oldtown.pharma.shared.exception.BadRequestException;
 import br.com.oldtown.pharma.shared.exception.ConflictException;
+import br.com.oldtown.pharma.shared.exception.InvalidPriceException;
 import br.com.oldtown.pharma.shared.exception.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -146,6 +147,23 @@ public class GlobalExceptionHandler {
                 null
         );
         ex.printStackTrace();
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler(InvalidPriceException.class)
+    public ResponseEntity<HttpErrorResponse> handleBadRequest(InvalidPriceException ex, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        HttpErrorResponse response = new HttpErrorResponse(
+                LocalDateTime.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                null
+        );
+        ex.printStackTrace();
+
         return ResponseEntity.status(status).body(response);
     }
 

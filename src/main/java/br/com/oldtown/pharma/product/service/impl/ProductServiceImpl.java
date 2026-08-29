@@ -2,23 +2,33 @@ package br.com.oldtown.pharma.product.service.impl;
 
 import br.com.oldtown.pharma.category.entity.Category;
 import br.com.oldtown.pharma.category.repository.CategoryRepository;
-import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
+import br.com.oldtown.pharma.product.dto.request.*;
+import br.com.oldtown.pharma.product.dto.response.DeletePromotionalPriceResponse;
 import br.com.oldtown.pharma.product.dto.response.ProductResponse;
-import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
+import br.com.oldtown.pharma.product.dto.response.PromotionalPriceResponse;
+import br.com.oldtown.pharma.product.dto.response.UpdatePriceResponse;
 import br.com.oldtown.pharma.product.entity.Product;
-import br.com.oldtown.pharma.product.entity.ProductType;
+import br.com.oldtown.pharma.product.entity.enums.ProductType;
+import br.com.oldtown.pharma.product.entity.enums.PromotionStatus;
 import br.com.oldtown.pharma.product.mapper.ProductMapper;
 import br.com.oldtown.pharma.product.repository.ProductRepository;
 import br.com.oldtown.pharma.product.service.ProductService;
 import br.com.oldtown.pharma.product.service.SkuGeneratorService;
 import br.com.oldtown.pharma.product.specification.ProductSearchCriteria;
 import br.com.oldtown.pharma.product.specification.ProductSpecification;
+import br.com.oldtown.pharma.shared.exception.BadRequestException;
 import br.com.oldtown.pharma.shared.exception.ConflictException;
+import br.com.oldtown.pharma.shared.exception.InvalidPriceException;
 import br.com.oldtown.pharma.shared.exception.NotFoundException;
+import br.com.oldtown.pharma.shared.utils.DateUtils;
+import br.com.oldtown.pharma.shared.utils.Util;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -79,6 +89,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse findByName(String name) {
+
         return productRepository.findByName(name)
                 .map(productMapper::toResponse)
                 .orElseThrow(() -> new NotFoundException("Product not found with name: " + name));
@@ -111,7 +122,67 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse update(Long id, UpdateProductRequest request) {
+    public PromotionalPriceResponse createPromotionalPrice(Long id, CreatePromotionalPriceRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Product not found."));
+
+        if (!product.isActive()) {
+            throw new ConflictException("Inactive product");
+        } else if (request.promotionalPrice().compareTo(product.getCostPrice()) < 0
+                || request.promotionalPrice().compareTo(product.getCostPrice()) == 0) {
+            throw new InvalidPriceException("Price cannot be less or equal cost price");
+        }
+
+        if (product.getStatus().equals(PromotionStatus.ACTIVE)
+                || product.getStatus().equals(PromotionStatus.SCHEDULED)) {
+            throw new ConflictException("Product has am active or scheduled promotion");
+        }
+
+        LocalDateTime startDate = DateUtils.parseToLocalDateTime(request.promotionStartDate());
+        LocalDateTime endDate = DateUtils.parseToLocalDateTime(request.promotionEndDate());
+        LocalDateTime now = LocalDateTime.now();
+        boolean isBeforeOrEqualNow = startDate.isBefore(now) || startDate.isEqual(now);
+
+        if (DateUtils.isEndDateAfterStartDate(startDate, endDate)) {
+            throw new BadRequestException("The end date cannot be earlier than the start date.");
+        } else {
+            product.setPromotionalPrice(request.promotionalPrice());
+            product.setPromotionStartDate(startDate);
+            product.setPromotionEndDate(endDate);
+            if (isBeforeOrEqualNow) {
+                product.setStatus(PromotionStatus.ACTIVE);
+            } else {
+                product.setStatus(PromotionStatus.SCHEDULED);
+            }
+
+            return productMapper.toResponsePromotionalPrice(productRepository.save(product));
+        }
+    }
+
+    @Override
+    public DeletePromotionalPriceResponse deletePromotionalPrice(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Product not found."));
+
+        if (!product.isActive()) {
+            throw new ConflictException("Inactive product");
+        }
+
+        if (product.getStatus().equals(PromotionStatus.ACTIVE)
+                || product.getStatus().equals(PromotionStatus.SCHEDULED)) {
+            product.setPromotionalPrice(null);
+            product.setPromotionStartDate(null);
+            product.setPromotionEndDate(null);
+            product.setStatus(PromotionStatus.NONE);
+        } else {
+            throw new ConflictException("There are no active or scheduled promotions for the product.");
+        }
+
+        return productMapper.toResponseDeletePromotionalPrice(productRepository.save(product));
+    }
+
+    @Override
+    public ProductResponse updateBasicData(Long id, UpdateProductRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Product not found."));
 
@@ -119,18 +190,34 @@ public class ProductServiceImpl implements ProductService {
             throw new ConflictException("Product already exists.");
         }
 
-        Category category = categoryRepository.findById(request.categoryId())
-                .orElseThrow(() -> new NotFoundException("Category not found."));
-
         productMapper.toUpdateEntity(product, request);
+        product.setSku(skuGeneratorService.generate(product));
 
         return productMapper.toResponse(productRepository.save(product));
+    }
+
+    @Override
+    public UpdatePriceResponse updatePrice(Long id, UpdatePriceRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Product not found."));
+
+        if (request.originalPrice().compareTo(product.getCostPrice()) < 0
+                || request.originalPrice().compareTo(product.getCostPrice()) == 0) {
+            throw new InvalidPriceException("Price cannot be less or equal cost price");
+        }
+
+        BigDecimal previousPrice = product.getOriginalPrice();
+        product.setOriginalPrice(request.originalPrice());
+        productRepository.save(product);
+
+        return new UpdatePriceResponse(id, previousPrice, product.getOriginalPrice());
     }
 
     @Override
     public void delete(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Product not found."));
-        productRepository.delete(product);
+        product.setActive(false);
+        productRepository.save(product);
     }
 }

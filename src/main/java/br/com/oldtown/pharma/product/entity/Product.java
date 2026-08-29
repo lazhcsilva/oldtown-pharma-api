@@ -1,6 +1,8 @@
 package br.com.oldtown.pharma.product.entity;
 
 import br.com.oldtown.pharma.category.entity.Category;
+import br.com.oldtown.pharma.product.entity.enums.ProductType;
+import br.com.oldtown.pharma.product.entity.enums.PromotionStatus;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -19,14 +21,27 @@ public class Product {
     @Column(nullable = false, length = 150)
     private String name;
 
-    @Column(length = 255)
+    @Column(length = 255, nullable = false)
     private String description;
 
     @Column(nullable = false, length = 150)
     private String manufacturer;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    private BigDecimal costPrice;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal originalPrice;
+
+    @Transient
+    private BigDecimal currentPrice;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal promotionalPrice;
+
+    private LocalDateTime promotionStartDate;
+
+    private LocalDateTime promotionEndDate;
 
     @Column(nullable = false)
     private boolean active;
@@ -40,6 +55,9 @@ public class Product {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ProductType productType;
+
+    @Enumerated(EnumType.STRING)
+    private PromotionStatus status = PromotionStatus.NONE;
 
     @OneToOne(
             mappedBy = "product",
@@ -93,12 +111,28 @@ public class Product {
         this.manufacturer = manufacturer;
     }
 
-    public BigDecimal getPrice() {
-        return price;
+    public BigDecimal getCostPrice() {
+        return costPrice;
     }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
+    public void setCostPrice(BigDecimal costPrice) {
+        this.costPrice = costPrice;
+    }
+
+    public BigDecimal getOriginalPrice() {
+        return originalPrice;
+    }
+
+    public void setOriginalPrice(BigDecimal originalPrice) {
+        this.originalPrice = originalPrice;
+    }
+
+    public BigDecimal getPromotionalPrice() {
+        return promotionalPrice;
+    }
+
+    public void setPromotionalPrice(BigDecimal promotionalPrice) {
+        this.promotionalPrice = promotionalPrice;
     }
 
     public boolean isActive() {
@@ -167,5 +201,38 @@ public class Product {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public LocalDateTime getPromotionStartDate() {
+        return promotionStartDate;
+    }
+
+    public void setPromotionStartDate(LocalDateTime promotionStartDate) {
+        this.promotionStartDate = promotionStartDate;
+    }
+
+    public LocalDateTime getPromotionEndDate() {
+        return promotionEndDate;
+    }
+
+    public void setPromotionEndDate(LocalDateTime promotionEndDate) {
+        this.promotionEndDate = promotionEndDate;
+    }
+
+    public BigDecimal getCurrentPrice() {
+        LocalDateTime today = LocalDateTime.now();
+        if (promotionalPrice != null && promotionStartDate != null && promotionEndDate != null
+                && !today.isBefore(promotionStartDate) && !today.isAfter(promotionEndDate)) {
+            return promotionalPrice;
+        }
+        return originalPrice;
+    }
+
+    public PromotionStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PromotionStatus status) {
+        this.status = status;
     }
 }

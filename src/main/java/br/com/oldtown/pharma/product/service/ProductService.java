@@ -1,8 +1,10 @@
 package br.com.oldtown.pharma.product.service;
 
-import br.com.oldtown.pharma.product.dto.request.CreateProductRequest;
+import br.com.oldtown.pharma.product.dto.request.*;
+import br.com.oldtown.pharma.product.dto.response.DeletePromotionalPriceResponse;
 import br.com.oldtown.pharma.product.dto.response.ProductResponse;
-import br.com.oldtown.pharma.product.dto.request.UpdateProductRequest;
+import br.com.oldtown.pharma.product.dto.response.PromotionalPriceResponse;
+import br.com.oldtown.pharma.product.dto.response.UpdatePriceResponse;
 import br.com.oldtown.pharma.product.specification.ProductSearchCriteria;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +14,9 @@ public interface ProductService {
     ProductResponse findByName(String name);
     ProductResponse findById(Long id);
     ProductResponse create(CreateProductRequest request);
-    ProductResponse update(Long id, UpdateProductRequest request);
+    PromotionalPriceResponse createPromotionalPrice(Long id, CreatePromotionalPriceRequest request);
+    DeletePromotionalPriceResponse deletePromotionalPrice(Long id);
+    ProductResponse updateBasicData(Long id, UpdateProductRequest request);
+    UpdatePriceResponse updatePrice(Long id, UpdatePriceRequest request);
     void delete(Long id);
 }
