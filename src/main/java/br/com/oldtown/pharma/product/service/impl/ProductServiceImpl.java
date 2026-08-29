@@ -89,11 +89,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse findByName(String name) {
-        ProductResponse productResponse = productRepository.findByName(name)
+
+        return productRepository.findByName(name)
                 .map(productMapper::toResponse)
                 .orElseThrow(() -> new NotFoundException("Product not found with name: " + name));
-
-        return productResponse;
     }
 
     @Override
@@ -141,6 +140,8 @@ public class ProductServiceImpl implements ProductService {
 
         LocalDateTime startDate = DateUtils.parseToLocalDateTime(request.promotionStartDate());
         LocalDateTime endDate = DateUtils.parseToLocalDateTime(request.promotionEndDate());
+        LocalDateTime now = LocalDateTime.now();
+        boolean isBeforeOrEqualNow = startDate.isBefore(now) || startDate.isEqual(now);
 
         if (DateUtils.isEndDateAfterStartDate(startDate, endDate)) {
             throw new BadRequestException("The end date cannot be earlier than the start date.");
@@ -148,7 +149,11 @@ public class ProductServiceImpl implements ProductService {
             product.setPromotionalPrice(request.promotionalPrice());
             product.setPromotionStartDate(startDate);
             product.setPromotionEndDate(endDate);
-            product.setStatus(PromotionStatus.SCHEDULED);
+            if (isBeforeOrEqualNow) {
+                product.setStatus(PromotionStatus.ACTIVE);
+            } else {
+                product.setStatus(PromotionStatus.SCHEDULED);
+            }
 
             return productMapper.toResponsePromotionalPrice(productRepository.save(product));
         }
@@ -212,6 +217,7 @@ public class ProductServiceImpl implements ProductService {
     public void delete(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Product not found."));
-        productRepository.delete(product);
+        product.setActive(false);
+        productRepository.save(product);
     }
 }

@@ -89,7 +89,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
     @PatchMapping("/{id}/create-promotion")
-    public ResponseEntity<PromotionalPriceResponse> createPromotionalPrice(@Positive Long id,
+    public ResponseEntity<PromotionalPriceResponse> createPromotionalPrice(@PathVariable @Positive Long id,
                                                                            @Valid @RequestBody CreatePromotionalPriceRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.createPromotionalPrice(id, request));
     }
@@ -101,7 +101,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
     @PatchMapping("/{id}/delete-promotion")
-    public ResponseEntity<DeletePromotionalPriceResponse> deletePromotionalPrice(@Positive Long id) {
+    public ResponseEntity<DeletePromotionalPriceResponse> deletePromotionalPrice(@PathVariable @Positive Long id) {
         return ResponseEntity.ok(productService.deletePromotionalPrice(id));
     }
 
