@@ -5,7 +5,8 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Gradle](https://img.shields.io/badge/Gradle-02303A?style=for-the-badge&logo=Gradle&logoColor=white)
 
-> A REST API management system for small pharmacies to efficiently track products, categories, prescriptions, and orders, built with a focus on clean architecture, scalability, and backend development best practices.
+> A REST API management system for small pharmacies to efficiently using the project follows a domain-oriented layered architecture, separating controllers, services, respositories, DTOs, mappers and JPA entities.
+> The project currently uses an in-memory H2 database for development. No external database configuration is required.
 
 ---
 
@@ -16,7 +17,7 @@ To run this project locally, you will need Java 17+ and PostgreSQL installed on 
 **1. Clone the repository**
 
 ```bash
-git clone [https://github.com/lazhcsilva/oldtown-pharma-api.git](https://github.com/lazhcsilva/oldtown-pharma-api.git)
+git clone https://github.com/lazhcsilva/oldtown-pharma-api.git
 cd oldtown-pharma-api
 ```
 
@@ -28,11 +29,13 @@ spring.datasource.url=jdbc:postgresql://localhost:5432/oldtown_pharma
 spring.datasource.username=YOUR_USERNAME
 spring.datasource.password=YOUR_PASSWORD
 ```
-**2. Configure the Database**
+**2. Run the application**
 ```bash
 ./gradlew bootRun
 ```
-The API will start at http://localhost:8080/swagger-ui/index.html
+
+**3. Access Swagger**
+The API will start at [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 
 ## 🚀 Technologies
 
@@ -43,6 +46,8 @@ The API will start at http://localhost:8080/swagger-ui/index.html
 * PostgreSQL
 * Swagger / OpenAPI
 * Gradle
+* jUnit
+* Mockito
 
 ---
 
@@ -62,19 +67,16 @@ controller → service → specification → repository → entity
 
 ```
 br.com.oldtown.pharma
-│
-├── config
-├── shared
-│   ├── exception
-│   ├── handler
-│   └── response
-│
-├── auth
-├── user
-├── product
 ├── category
-├── order (in progress)
-└── prescription
+├── config
+├── infrastructure
+│   └── parameter
+├── order: in progress
+├── prescription: in progress
+├── product
+├── shared
+├── stock: in progress
+└── user
 ```
 
 ---
@@ -93,13 +95,20 @@ br.com.oldtown.pharma
 
 ### 📦 Product
 
-* Create product
-* Update product
-* Soft delete
-* Associate with category
-* Paginated listing
-  * Specifications: Handle dynamic query building and complex database filtering.   
-  * Search by name, type, therapeutic class, actives, price and category
+- Create common products and medicines
+- Associate products with categories
+- Update basic product data
+- Update original price
+- Create and remove promotions
+- Calculate current price
+- Soft delete products
+- Dynamic paginated search by:
+  - name
+  - type
+  - therapeutic class
+  - active status
+  - price range
+  - category
 
 ### 🗂️ Category
 
@@ -110,9 +119,10 @@ br.com.oldtown.pharma
 
 ## 🔐 Security
 
-* Password hashing using `PasswordEncoder`
-* Old password validation before update
-* DTO usage to avoid exposing entities
+- Password hashing with BCrypt
+- Current password validation before changing it
+- Password hashes are not exposed in response DTOs
+- Authentication and endpoint authorization are not implemented yet.
 
 ---
 
@@ -128,19 +138,20 @@ http://localhost:8080/swagger-ui.html
 
 ## 📬 Endpoints Examples
 
-### 🔑 Change Password
+### 🔑 Get category
 
 ```
-PATCH /users/{id}/change-password
+GET /api/v1/categories/{id}
+GET /api/v1/categories/search
 ```
 
 Body:
 
 ```json
 {
-  "oldPassword": "123456",
-  "confirmOldPassword": "123456",
-  "newPassword": "newPassword123"
+  "id": "1",
+  "name": "Medicines",
+  "description": "Medicinal products"
 }
 ```
 
@@ -149,15 +160,16 @@ Body:
 ### 👤 Create User
 
 ```
-POST /users
+POST /api/v1/user/users
 ```
 
----
-
-### 📦 Get Products (Paginated)
-
-```
-GET /products?page=0&size=10
+```json
+{
+  "firstName": "Lázaro",
+  "lastName": "Silva",
+  "email": "lazarosilva@gmail.com.com",
+  "password": "Lazaro123."
+}
 ```
 
 ---
@@ -184,7 +196,7 @@ Instead of exposing internal server stack traces, the API consistently returns a
   "status": 400,
   "error": "Bad Request",
   "message": "Validation error.",
-  "path": "/users",
+  "path": "/api/v1/users",
   "details": [
     "email: must be a well-formed email address"
   ]
@@ -196,7 +208,7 @@ Handled status codes:
 * 400 → Bad Request
 * 404 → Not Found
 * 409 → Conflict
-* 500 → Internal Server Error (can be improved)
+* 500 → Unexpected internal server error
 
 ---
 
@@ -232,14 +244,16 @@ Using Bean Validation annotations:
 * [ ] Token blacklist
 * [ ] Role-based authorization
 * [ ] Granular permissions control
-* [ ] Unit and integration tests
 * [ ] Docker support
 * [ ] Password reset
 * [ ] Audit logging
 * [ ] Email confirmation
 * [ ] MFA/2FA
 * [ ] Rate limiting
-
+* [x] Initial unit tests for CategoryService
+* [ ] Unit tests for ProductService
+* [ ] Unit tests for UserService
+* [ ] Controller integration tests
 ---
 
 ## 📈 Project Goal
