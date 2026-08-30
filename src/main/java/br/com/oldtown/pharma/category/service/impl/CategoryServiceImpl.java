@@ -34,7 +34,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryResponse findById(Long id) {
         return categoryRepository.findById(id)
                 .map(mapper::toResponse)
-                .orElseThrow(() -> new NotFoundException("Category ot found"));
+                .orElseThrow(() -> new NotFoundException("Category not found"));
     }
 
     @Override
@@ -64,11 +64,11 @@ public class CategoryServiceImpl implements CategoryService {
             throw new ConflictException("Category already exists");
         }
 
-        category = mapper.toUpdateEntity(request);
+        mapper.updateEntity(request, category);
 
         Category savedCategory = categoryRepository.save(category);
 
-        return new CategoryResponse(savedCategory.getId(), savedCategory.getName(), savedCategory.getDescription());
+        return mapper.toResponse(savedCategory);
     }
 
     @Override
