@@ -18,8 +18,8 @@ import org.springframework.data.domain.*;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,12 +43,12 @@ public class CategoryServiceImplTest {
         Long categoryId = 1L;
 
         Category category = new Category("Medicines", "Medicinal products");
+        category.setId(categoryId);
 
         CategoryResponse expectedResponse = new CategoryResponse(
-                categoryId, "Medicines", "Medicional products");
+                categoryId, "Medicines", "Medicinal products");
 
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
-
         when(categoryMapper.toResponse(category)).thenReturn(expectedResponse);
 
         // Act
@@ -56,10 +56,13 @@ public class CategoryServiceImplTest {
 
         // Assert
         assertThat(response).isEqualTo(expectedResponse);
+
+        verify(categoryRepository).findById(categoryId);
+        verify(categoryMapper).toResponse(category);
     }
 
     @Test
-    void shouldThrowNotFoundExceptionWhenCategoryDoesNotExit() {
+    void shouldThrowNotFoundExceptionWhenCategoryDoesNotExist() {
         // Arrange
         Long categoryId = 999L;
 
@@ -100,7 +103,7 @@ public class CategoryServiceImplTest {
     }
 
     @Test
-    void shouldThrowNotFoundExceptionWhenCategoryNameDoesNotExit() {
+    void shouldThrowNotFoundExceptionWhenCategoryNameDoesNotExist() {
         // Arrange
         String categoryName = "DVD";
 
@@ -146,6 +149,7 @@ public class CategoryServiceImplTest {
         assertThat(result.getTotalElements()).isEqualTo(2);
         assertThat(result.getNumber()).isZero();
         assertThat(result.getSize()).isEqualTo(10);
+        assertThat(result.getTotalElements()).isEqualTo(2);
 
         verify(categoryRepository).findAll(pageable);
         verify(categoryMapper).toResponse(medicines);
@@ -158,6 +162,7 @@ public class CategoryServiceImplTest {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Category> emptyPage = Page.empty(pageable);
 
+        when(categoryRepository.findAll(pageable)).thenReturn(emptyPage);
         when(categoryRepository.findAll(pageable)).thenReturn(emptyPage);
 
         // Act
