@@ -4,6 +4,7 @@ import br.com.oldtown.pharma.category.entity.Category;
 import br.com.oldtown.pharma.category.repository.CategoryRepository;
 import br.com.oldtown.pharma.product.entity.Product;
 import br.com.oldtown.pharma.product.entity.enums.ProductType;
+import br.com.oldtown.pharma.product.entity.enums.PromotionStatus;
 import br.com.oldtown.pharma.product.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -99,6 +100,37 @@ class ProductSpecificationTest {
         assertThat(firstPage.getTotalElements()).isEqualTo(2);
         assertThat(firstPage.getContent()).extracting(Product::getName).containsExactly("B");
         assertThat(secondPage.getContent()).extracting(Product::getName).containsExactly("C");
+    }
+
+    @Test
+    void shouldSortByCalculatedStatusBeforePagination() {
+        LocalDateTime now = LocalDateTime.now();
+        Product expired = product("Expired", "30.00");
+        expired.setPromotionalPrice(new BigDecimal("15.00"));
+        expired.setPromotionStartDate(now.minusDays(2));
+        expired.setPromotionEndDate(now.minusDays(1));
+        Product active = product("Active", "30.00");
+        active.setPromotionalPrice(new BigDecimal("15.00"));
+        active.setPromotionStartDate(now.minusDays(1));
+        active.setPromotionEndDate(now.plusDays(1));
+        Product scheduled = product("Scheduled", "30.00");
+        scheduled.setPromotionalPrice(new BigDecimal("15.00"));
+        scheduled.setPromotionStartDate(now.plusDays(1));
+        scheduled.setPromotionEndDate(now.plusDays(2));
+        productRepository.saveAllAndFlush(java.util.List.of(
+                scheduled, product("None", "30.00"), expired, active));
+
+        var specification = ProductSpecification.priceLessThanOrEqual(new BigDecimal("30.00"));
+        var firstPage = productRepository.findAll(specification,
+                PageRequest.of(0, 2, Sort.by("status")));
+        var secondPage = productRepository.findAll(specification,
+                PageRequest.of(1, 2, Sort.by("status")));
+
+        assertThat(firstPage.getTotalElements()).isEqualTo(4);
+        assertThat(firstPage.getContent()).extracting(Product::getStatus)
+                .containsExactly(PromotionStatus.ACTIVE, PromotionStatus.EXPIRED);
+        assertThat(secondPage.getContent()).extracting(Product::getStatus)
+                .containsExactly(PromotionStatus.NONE, PromotionStatus.SCHEDULED);
     }
 
     private Product product(String name, String originalPrice) {

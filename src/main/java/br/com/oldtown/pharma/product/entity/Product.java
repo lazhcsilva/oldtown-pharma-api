@@ -4,6 +4,7 @@ import br.com.oldtown.pharma.category.entity.Category;
 import br.com.oldtown.pharma.product.entity.enums.ProductType;
 import br.com.oldtown.pharma.product.entity.enums.PromotionStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Formula;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -56,8 +57,13 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private ProductType productType;
 
+    // Read-only expression used by JPA queries, including sorting by status.
+    @Formula("case when promotional_price is null or promotion_start_date is null "
+            + "or promotion_end_date is null or promotion_end_date < promotion_start_date then 'NONE' "
+            + "when current_timestamp < promotion_start_date then 'SCHEDULED' "
+            + "when current_timestamp > promotion_end_date then 'EXPIRED' else 'ACTIVE' end")
     @Enumerated(EnumType.STRING)
-    private PromotionStatus status = PromotionStatus.NONE;
+    private PromotionStatus status;
 
     @OneToOne(
             mappedBy = "product",
@@ -220,19 +226,28 @@ public class Product {
     }
 
     public BigDecimal getCurrentPrice() {
-        LocalDateTime today = LocalDateTime.now();
-        if (promotionalPrice != null && promotionStartDate != null && promotionEndDate != null
-                && !today.isBefore(promotionStartDate) && !today.isAfter(promotionEndDate)) {
-            return promotionalPrice;
-        }
-        return originalPrice;
+        return getCurrentPrice(LocalDateTime.now());
+    }
+
+    public BigDecimal getCurrentPrice(LocalDateTime now) {
+        return getStatus(now) == PromotionStatus.ACTIVE ? promotionalPrice : originalPrice;
     }
 
     public PromotionStatus getStatus() {
-        return status;
+        return getStatus(LocalDateTime.now());
     }
 
-    public void setStatus(PromotionStatus status) {
-        this.status = status;
+    public PromotionStatus getStatus(LocalDateTime now) {
+        if (promotionalPrice == null || promotionStartDate == null || promotionEndDate == null
+                || promotionEndDate.isBefore(promotionStartDate)) {
+            return PromotionStatus.NONE;
+        }
+        if (now.isBefore(promotionStartDate)) {
+            return PromotionStatus.SCHEDULED;
+        }
+        if (now.isAfter(promotionEndDate)) {
+            return PromotionStatus.EXPIRED;
+        }
+        return PromotionStatus.ACTIVE;
     }
 }

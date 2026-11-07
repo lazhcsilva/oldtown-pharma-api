@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -133,27 +134,32 @@ public class ProductServiceImpl implements ProductService {
             throw new InvalidPriceException("Price cannot be less or equal cost price");
         }
 
-        if (product.getStatus().equals(PromotionStatus.ACTIVE)
-                || product.getStatus().equals(PromotionStatus.SCHEDULED)) {
+        LocalDateTime now = LocalDateTime.now();
+        PromotionStatus status = product.getStatus(now);
+        if (status == PromotionStatus.ACTIVE || status == PromotionStatus.SCHEDULED) {
             throw new ConflictException("Product has am active or scheduled promotion");
         }
 
-        LocalDateTime startDate = DateUtils.parseToLocalDateTime(request.promotionStartDate());
-        LocalDateTime endDate = DateUtils.parseToLocalDateTime(request.promotionEndDate());
-        LocalDateTime now = LocalDateTime.now();
-        boolean isBeforeOrEqualNow = startDate.isBefore(now) || startDate.isEqual(now);
+        LocalDateTime startDate;
+        LocalDateTime endDate;
+        try {
+            startDate = DateUtils.parseToLocalDateTime(request.promotionStartDate());
+            endDate = DateUtils.parseToLocalDateTime(request.promotionEndDate());
+        } catch (DateTimeParseException ex) {
+            throw new BadRequestException("Promotion dates must use dd/MM/yyyy HH:mm:ss format.");
+        }
+        if (startDate == null || endDate == null) {
+            throw new BadRequestException("Promotion start and end dates are required.");
+        }
 
         if (DateUtils.isEndDateAfterStartDate(startDate, endDate)) {
             throw new BadRequestException("The end date cannot be earlier than the start date.");
+        } else if (endDate.isBefore(now)) {
+            throw new BadRequestException("Promotion end date must not be in the past.");
         } else {
             product.setPromotionalPrice(request.promotionalPrice());
             product.setPromotionStartDate(startDate);
             product.setPromotionEndDate(endDate);
-            if (isBeforeOrEqualNow) {
-                product.setStatus(PromotionStatus.ACTIVE);
-            } else {
-                product.setStatus(PromotionStatus.SCHEDULED);
-            }
 
             return productMapper.toResponsePromotionalPrice(productRepository.save(product));
         }
@@ -168,12 +174,11 @@ public class ProductServiceImpl implements ProductService {
             throw new ConflictException("Inactive product");
         }
 
-        if (product.getStatus().equals(PromotionStatus.ACTIVE)
-                || product.getStatus().equals(PromotionStatus.SCHEDULED)) {
+        PromotionStatus status = product.getStatus(LocalDateTime.now());
+        if (status == PromotionStatus.ACTIVE || status == PromotionStatus.SCHEDULED) {
             product.setPromotionalPrice(null);
             product.setPromotionStartDate(null);
             product.setPromotionEndDate(null);
-            product.setStatus(PromotionStatus.NONE);
         } else {
             throw new ConflictException("There are no active or scheduled promotions for the product.");
         }

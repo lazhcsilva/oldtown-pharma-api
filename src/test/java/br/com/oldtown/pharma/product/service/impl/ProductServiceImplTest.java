@@ -271,7 +271,7 @@ class ProductServiceImplTest {
     @EnumSource(value = PromotionStatus.class, names = {"ACTIVE", "SCHEDULED"})
     void shouldRejectOverlappingPromotion(PromotionStatus status) {
         givenProductExists();
-        product.setStatus(status);
+        givenPromotion(status);
 
         assertThatThrownBy(() -> service.createPromotionalPrice(PRODUCT_ID, promotionRequest(-1, 1)))
                 .isInstanceOf(ConflictException.class);
@@ -314,10 +314,7 @@ class ProductServiceImplTest {
     @EnumSource(value = PromotionStatus.class, names = {"ACTIVE", "SCHEDULED"})
     void shouldClearPromotionAndRestoreOriginalPrice(PromotionStatus status) {
         givenProductExists();
-        product.setStatus(status);
-        product.setPromotionalPrice(new BigDecimal("20"));
-        product.setPromotionStartDate(LocalDateTime.now().minusDays(1));
-        product.setPromotionEndDate(LocalDateTime.now().plusDays(1));
+        givenPromotion(status);
         when(productRepository.save(product)).thenReturn(product);
         DeletePromotionalPriceResponse expected = new DeletePromotionalPriceResponse(PRODUCT_ID, "Test product",
                 null, new BigDecimal("30"), null, new BigDecimal("30"), PromotionStatus.NONE);
@@ -336,7 +333,7 @@ class ProductServiceImplTest {
     @EnumSource(value = PromotionStatus.class, names = {"NONE", "EXPIRED"})
     void shouldRejectRemovalWithoutActiveOrScheduledPromotion(PromotionStatus status) {
         givenProductExists();
-        product.setStatus(status);
+        givenPromotion(status);
 
         assertThatThrownBy(() -> service.deletePromotionalPrice(PRODUCT_ID)).isInstanceOf(ConflictException.class);
         verify(productRepository, never()).save(any());
@@ -353,6 +350,53 @@ class ProductServiceImplTest {
         assertThat(product.getOriginalPrice()).isEqualByComparingTo("30");
         verify(productRepository).save(product);
         verify(productRepository, never()).delete(any(Product.class));
+    }
+
+    @Test
+    void shouldReplaceExpiredPromotionWithoutReadingCurrentPriceFirst() {
+        givenProductExists();
+        givenPromotion(PromotionStatus.EXPIRED);
+        CreatePromotionalPriceRequest request = promotionRequest(-1, 1);
+        when(productRepository.save(product)).thenReturn(product);
+
+        service.createPromotionalPrice(PRODUCT_ID, request);
+
+        assertThat(product.getStatus()).isEqualTo(PromotionStatus.ACTIVE);
+        assertThat(product.getPromotionEndDate())
+                .isEqualTo(LocalDateTime.parse(request.promotionEndDate(), DATE_FORMAT));
+        verify(productRepository).save(product);
+    }
+
+    @Test
+    void shouldRejectNewPromotionAlreadyExpired() {
+        givenProductExists();
+
+        assertThatThrownBy(() -> service.createPromotionalPrice(PRODUCT_ID, promotionRequest(-2, -1)))
+                .isInstanceOf(BadRequestException.class);
+        assertThat(product.getPromotionalPrice()).isNull();
+        verify(productRepository, never()).save(any());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {"NULL|01/01/2030 10:00:00", "01/01/2030 10:00:00|NULL",
+            "invalid|01/01/2030 10:00:00", "01/01/2030 10:00:00|invalid"},
+            delimiter = '|', nullValues = "NULL")
+    void shouldRejectMissingOrMalformedPromotionDates(String start, String end) {
+        givenProductExists();
+
+        assertThatThrownBy(() -> service.createPromotionalPrice(PRODUCT_ID,
+                new CreatePromotionalPriceRequest(new BigDecimal("20"), start, end)))
+                .isInstanceOf(BadRequestException.class);
+        assertThat(product.getPromotionalPrice()).isNull();
+        verify(productRepository, never()).save(any());
+    }
+
+    private void givenPromotion(PromotionStatus status) {
+        if (status == PromotionStatus.NONE) return;
+        LocalDateTime now = LocalDateTime.now();
+        product.setPromotionalPrice(new BigDecimal("20"));
+        product.setPromotionStartDate(status == PromotionStatus.SCHEDULED ? now.plusDays(1) : now.minusDays(2));
+        product.setPromotionEndDate(status == PromotionStatus.EXPIRED ? now.minusDays(1) : now.plusDays(2));
     }
 
     private void givenProductExists() {

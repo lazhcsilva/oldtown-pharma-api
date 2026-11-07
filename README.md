@@ -224,6 +224,7 @@ Other known limitations identified through source inspection:
 
 These observations have not been reproduced through runtime tests as part of this documentation update.
 
+Instead of exposing internal server stack traces, the API consistently returns a standardized, user-friendly JSON response:
 ## ⚠️ Error Handling and Validation
 
 `GlobalExceptionHandler` uses `@RestControllerAdvice` to map application exceptions and supported validation errors to `HttpErrorResponse`.
