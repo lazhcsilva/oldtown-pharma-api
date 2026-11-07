@@ -77,7 +77,9 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(request));
     }
 
-    @Operation(summary = "Update a user")
+    @Operation(summary = "Update user profile",
+            description = "Updates first name, last name and email only. To change the password, "
+                    + "use PATCH /api/v1/users/{id}/password with the current password and new password confirmation.")
     @PutMapping("/{id}")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User updated successfully"),

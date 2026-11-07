@@ -35,12 +35,12 @@ public class ProductSpecification {
 
     public static Specification<Product> priceGreaterThanOrEqual(BigDecimal minPrice) {
         return ((root, query, criteriaBuilder) ->
-                criteriaBuilder.greaterThanOrEqualTo(root.get("currentPrice"), minPrice));
+                criteriaBuilder.greaterThanOrEqualTo(getCurrentPriceExpression(root, criteriaBuilder), minPrice));
     }
 
     public static Specification<Product> priceLessThanOrEqual(BigDecimal maxPrice) {
         return ((root, query, criteriaBuilder) ->
-                criteriaBuilder.lessThanOrEqualTo(root.get("currentPrice"), maxPrice));
+                criteriaBuilder.lessThanOrEqualTo(getCurrentPriceExpression(root, criteriaBuilder), maxPrice));
     }
 
     public static Specification<Product> hasCategory(Long categoryId) {
@@ -51,8 +51,8 @@ public class ProductSpecification {
     private static Expression<BigDecimal> getCurrentPriceExpression(Root<Product> root, CriteriaBuilder cb) {
         LocalDateTime now = LocalDateTime.now();
         Predicate hasPromoTime = cb.isNotNull(root.get("promotionalPrice"));
-        Predicate promoStarted = cb.lessThanOrEqualTo(root.get("promotionalStartDate"), now);
-        Predicate promoEnded = cb.greaterThanOrEqualTo(root.get("promotionalEndDate"), now);
+        Predicate promoStarted = cb.lessThanOrEqualTo(root.get("promotionStartDate"), now);
+        Predicate promoEnded = cb.greaterThanOrEqualTo(root.get("promotionEndDate"), now);
         Predicate isPromoActive = cb.and(hasPromoTime, promoStarted, promoEnded);
 
         return cb.<BigDecimal>selectCase()
