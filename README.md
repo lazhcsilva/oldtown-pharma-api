@@ -176,7 +176,30 @@ Dynamic filtering and strict business rules require robust validation. To ensure
 
 Any exceptions thrown within the application—such as a `NotFoundException` when a queried resource doesn't exist, a `ConflictException` during data modification, or `MethodArgumentNotValidException` from invalid payload inputs—are intercepted globally. 
 
+<<<<<<< Updated upstream
 Instead of exposing internal server stack traces, the API consistently returns a standardized, user-friendly JSON response:
+=======
+- Product price filters reference `currentPrice`, which is a transient JPA attribute. The unused helper expression also references date property names that differ from the entity.
+- Promotion status is derived from price and dates: `NONE`, `SCHEDULED`, `ACTIVE` or `EXPIRED`. Start and end are inclusive. Sorting by `status` uses a read-only Hibernate SQL formula; status is not stored in a separate column. New promotions require dates and cannot already be expired.
+- Common-product creation does not explicitly set `active` to `true`.
+- Product search executes the repository query twice.
+- Product validation needs additional handling for null prices, nested medicine details and promotion dates.
+
+These observations have not been reproduced through runtime tests as part of this documentation update.
+
+## ⚠️ Error Handling and Validation
+
+`GlobalExceptionHandler` uses `@RestControllerAdvice` to map application exceptions and supported validation errors to `HttpErrorResponse`.
+
+| Status | Handled cases |
+| --- | --- |
+| `400 Bad Request` | Business input errors, invalid prices, request-body validation, constraint violations and unreadable request bodies |
+| `404 Not Found` | Resources not found |
+| `409 Conflict` | Conflicting operations, such as duplicate records detected by the service |
+| `500 Internal Server Error` | Exceptions falling through to the generic handler |
+
+Example of the response structure for an invalid email in user creation:
+>>>>>>> Stashed changes
 
 ```json
 {
