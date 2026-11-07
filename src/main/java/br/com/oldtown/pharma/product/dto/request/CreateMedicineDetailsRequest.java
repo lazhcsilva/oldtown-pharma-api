@@ -4,13 +4,16 @@ import br.com.oldtown.pharma.product.entity.enums.ProductPresentation;
 import br.com.oldtown.pharma.product.entity.enums.TherapeuticClass;
 import br.com.oldtown.pharma.product.entity.enums.UnitMeasure;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public record CreateMedicineDetailsRequest(
 
-        @NotNull(message = "Anvisa registration is required")
+        @NotBlank(message = "Anvisa registration is required")
+        @Size(max = 50)
         String anvisaRegistration,
 
-        @NotNull(message = "Dosage is required")
+        @NotBlank(message = "Dosage is required")
         String dosage,
 
         @NotNull(message = "A unit of measurement is required")
@@ -22,10 +25,10 @@ public record CreateMedicineDetailsRequest(
         @NotNull(message = "Presentation is required")
         ProductPresentation presentation,
 
-        @NotNull(message = "Brand name is required")
+        @NotBlank(message = "Brand name is required")
         String brandName,
 
-        @NotNull(message = "Generic name is required")
+        @NotBlank(message = "Generic name is required")
         String genericName,
 
         @NotNull(message = "Inform if product have expiration")

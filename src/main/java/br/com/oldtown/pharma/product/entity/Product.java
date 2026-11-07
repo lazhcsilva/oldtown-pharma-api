@@ -5,8 +5,6 @@ import br.com.oldtown.pharma.product.entity.enums.ProductType;
 import br.com.oldtown.pharma.product.entity.enums.PromotionStatus;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Formula;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,6 +16,9 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Version
+    private Long version;
 
     @Column(nullable = false, length = 150)
     private String name;
@@ -45,7 +46,7 @@ public class Product {
     private LocalDateTime promotionEndDate;
 
     @Column(nullable = false)
-    private boolean active;
+    private boolean active = true;
 
     @Column(nullable = false)
     private String sku;
@@ -73,10 +74,8 @@ public class Product {
     )
     private MedicineDetails medicineDetails;
 
-    @CreatedDate
     private LocalDateTime createdAt;
 
-    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     @ManyToOne
@@ -84,6 +83,18 @@ public class Product {
     private Category category;
 
     public Product() {}
+
+    @PrePersist
+    private void initializeTimestamps() {
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    private void updateTimestamp() {
+        updatedAt = LocalDateTime.now();
+    }
 
     public Long getId() {
         return id;

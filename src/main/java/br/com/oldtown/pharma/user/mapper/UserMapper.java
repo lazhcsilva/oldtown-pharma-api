@@ -11,6 +11,10 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "firstName", source = "firstName")
+    @Mapping(target = "lastName", source = "lastName")
+    @Mapping(target = "email", source = "email")
     User toEntity(CreateUserRequest request);
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "firstName", source = "firstName")

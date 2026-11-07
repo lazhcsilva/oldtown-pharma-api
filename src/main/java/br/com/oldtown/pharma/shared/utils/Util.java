@@ -7,7 +7,7 @@ public class Util {
             return word;
         }
 
-        return word.substring(0, 3);
+        return word.substring(0, Math.min(3, word.length()));
     }
 
 }

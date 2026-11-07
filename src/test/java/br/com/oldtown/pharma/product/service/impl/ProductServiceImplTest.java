@@ -122,6 +122,7 @@ class ProductServiceImplTest {
         assertThat(result.getNumber()).isEqualTo(1);
         assertThat(result.getSize()).isEqualTo(2);
         assertThat(result.getTotalElements()).isEqualTo(3);
+        verify(productRepository, times(1)).findAll(org.mockito.ArgumentMatchers.<Specification<Product>>any(), eq(pageable));
     }
 
     @Test
@@ -293,7 +294,7 @@ class ProductServiceImplTest {
         givenProductExists();
 
         assertThatThrownBy(() -> service.createPromotionalPrice(PRODUCT_ID, promotionRequest(1, 1)))
-                .isInstanceOf(ConflictException.class);
+                .isInstanceOf(BadRequestException.class);
         verify(productRepository, never()).save(any());
     }
 
@@ -379,7 +380,8 @@ class ProductServiceImplTest {
 
     @ParameterizedTest
     @CsvSource(value = {"NULL|01/01/2030 10:00:00", "01/01/2030 10:00:00|NULL",
-            "invalid|01/01/2030 10:00:00", "01/01/2030 10:00:00|invalid"},
+            "invalid|01/01/2030 10:00:00", "01/01/2030 10:00:00|invalid",
+            "31/02/2030 10:00:00|01/03/2030 10:00:00"},
             delimiter = '|', nullValues = "NULL")
     void shouldRejectMissingOrMalformedPromotionDates(String start, String end) {
         givenProductExists();

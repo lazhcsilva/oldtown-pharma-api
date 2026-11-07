@@ -94,7 +94,7 @@ br.com.oldtown.pharma
 ├── config
 ├── infrastructure
 │   └── parameter
-├── order          # in progress
+├── order
 ├── prescription   # in progress
 ├── product
 ├── shared
@@ -102,7 +102,7 @@ br.com.oldtown.pharma
 └── user
 ```
 
-The order API is still being developed and currently exposes entities directly.
+The order API uses request/response DTOs and persists orders transactionally. Stock, payment and prescription workflows remain separate milestones.
 
 ## 🧠 Implementation Status
 
@@ -111,10 +111,10 @@ The order API is still being developed and currently exposes entities directly.
 | User | Creation, paginated listing, lookup by ID or email, update, soft deletion and a dedicated password-change endpoint |
 | Category | Creation, paginated listing, lookup by ID or name, update and deletion; association with products |
 | Product | Common products and medicines, category association, basic updates, price updates, promotion operations, current-price calculation, soft deletion and paginated search |
-| Order | Initial entities, repository, controller and service; insertion does not persist an order, and update/delete service methods are empty |
+| Order | Transactional creation, paginated listing, lookup, item updates in CREATED status and logical cancellation; server-calculated prices and totals |
 | Prescription / Stock | Initial persistence models; business workflows are not complete |
 
-Implemented operations still have known limitations listed below. Order endpoints should not be interpreted as completed sales workflows, even when they return a successful HTTP status.
+The order workflow records a purchase request and its prices. It does not yet process payments, check prescriptions or reserve/decrement stock.
 
 ## 🔎 Product Search
 
@@ -127,15 +127,15 @@ Implemented operations still have known limitations listed below. Order endpoint
 | `therapeuticClass` | A value from the `TherapeuticClass` enum |
 | `active` | Active or inactive products |
 | `categoryId` | Category ID |
-| `minPrice` | Minimum current price; implementation requires correction |
-| `maxPrice` | Maximum current price; implementation requires correction |
+| `minPrice` | Minimum current price, inclusive |
+| `maxPrice` | Maximum current price, inclusive |
 | `page` | Zero-based page index; defaults to `0` |
 | `size` | Page size; defaults to `10` |
 | `sort` | Persistent property and direction, such as `name,asc` |
 
 Specifications combine the supplied business filters. Query performance depends on the generated SQL, relationships, database and indexes; using Specifications alone does not guarantee efficiency.
 
-Example without the price filters that currently require correction:
+Example combining product filters and pagination:
 
 ```bash
 curl --get 'http://localhost:8080/api/v1/products/search' \
@@ -207,24 +207,51 @@ On successful creation, the controller returns `201 Created` with a body such as
 
 The password and its hash are not included in `UserResponse`. Repeating creation with an existing email produces a conflict.
 
+## 🛒 Orders
+
+Use `/api/v1/orders`. The existing `/orders` path is retained as an alias. Requests now identify the customer and products by ID; responses are DTOs and no longer return persistence entities.
+
+Create an order with `POST /api/v1/orders` (`201 Created`):
+
+```json
+{
+  "customerId": 1,
+  "items": [
+    { "productId": 31, "quantity": 2 }
+  ]
+}
+```
+
+Use existing IDs from the current application run. Prices, totals and initial status are calculated by the server; sending price/total fields does not override them.
+
+- `GET /api/v1/orders?page=0&size=10`: paginated DTO response, including an empty page when there are no matches. Sortable fields: `id`, `createdAt`, `status`, `totalAmount`.
+- `GET /api/v1/orders/{id}`: order DTO with customer ID, status, total, creation time and item DTOs.
+- `PUT /api/v1/orders/{id}`: replace the items of a `CREATED` order with `{"items":[{"productId":31,"quantity":3}]}`. Products remaining in the order retain their recorded unit prices; new products use their current prices. The customer is not changed.
+- `DELETE /api/v1/orders/{id}`: change a `CREATED` order to `CANCELED` and return `204`. Repeated cancellation is idempotent. History and recorded prices are preserved. `PAID` and `FINISHED` orders reject edits/cancellation through these operations.
+
+Orders require an active customer, active products, distinct product IDs and positive quantities up to 1,000,000. They accept at most 100 items and a total up to 99,999,999.99, matching database precision. Unknown resources return `404`; conflicting states return `409`.
+
 ## 🔐 Security and Current Limitations
 
 - Passwords are hashed with BCrypt.
 - The dedicated `PATCH /api/v1/users/{id}/password` operation validates the current password, confirmation and a minimum new-password length of eight characters.
-- The general user update operation also accepts a password, but does not check the current password and uses a minimum length of six characters. These paths still need a consistent policy.
+- `PUT /api/v1/users/{id}` updates only `firstName`, `lastName` and `email`, preserving the password hash. Password changes use the dedicated endpoint above. Password hashes are also excluded from entity serialization.
 - Authentication and endpoint authorization are not implemented. Password hashing does not restrict access to API operations.
 
-Other known limitations identified through source inspection:
+Product and promotion behavior:
 
-- Product price filters reference `currentPrice`, which is a transient JPA attribute. The unused helper expression also references date property names that differ from the entity.
-- Promotion status is stored separately from the date-based current-price calculation and does not automatically follow time transitions in the inspected flows.
-- Common-product creation does not explicitly set `active` to `true`.
-- Product search executes the repository query twice.
-- Product validation needs additional handling for null prices, nested medicine details and promotion dates.
+- Products and users start active. Product creation initializes timestamps through JPA lifecycle callbacks.
+- Price filtering uses a database expression for the current price and executes a single repository search.
+- Promotion status is calculated from price and dates: `NONE`, `SCHEDULED`, `ACTIVE` or `EXPIRED`. Start and end instants are inclusive.
+- Sorting by `status` uses a read-only Hibernate SQL formula; no separate status column is stored.
+- Creating a product with a promotion uses the same service validation as the dedicated promotion operation: price above cost, required dates, end after start and a promotion that has not already ended.
+- Dedicated promotion requests use strict `dd/MM/yyyy HH:mm:ss` parsing. Product creation uses ISO local date-time strings, such as `2030-01-01T10:00:00`.
+- Nested medicine details are validated. Short product/category names and dosages are supported by SKU generation.
+- Invalid sort properties, malformed parameters and invalid price ranges return `400`. Price bounds must be non-negative and `minPrice` must not exceed `maxPrice`.
+- Product and order updates use optimistic locking; concurrent-update conflicts return `409`.
 
-These observations have not been reproduced through runtime tests as part of this documentation update.
+Current limits: authentication/authorization, stock movements, payment processing and prescription checks are not implemented. The database remains local H2 with `create-drop`. Formula-based sorting uses the database clock, while Java calculations use the application clock; keep both on the same time zone and validate behavior when introducing another database.
 
-Instead of exposing internal server stack traces, the API consistently returns a standardized, user-friendly JSON response:
 ## ⚠️ Error Handling and Validation
 
 `GlobalExceptionHandler` uses `@RestControllerAdvice` to map application exceptions and supported validation errors to `HttpErrorResponse`.
@@ -251,7 +278,7 @@ Example of the response structure for an invalid email in user creation:
 }
 ```
 
-Validation uses annotations including `@NotBlank`, `@NotNull`, `@Email`, `@Positive`, `@Size` and `@AssertTrue`. Their use does not imply that every invalid-input scenario is covered. The generic handler returns a fixed message rather than the internal exception message; handlers currently print stack traces to the application console.
+Validation uses annotations including `@NotBlank`, `@NotNull`, `@Email`, `@Positive`, `@Size` and `@AssertTrue`. Their use does not imply that every invalid-input scenario is covered. The generic handler returns a fixed message rather than the internal exception message; unexpected errors are recorded through the application logger. Integrity and optimistic-locking conflicts return `409` without exposing database details.
 
 ## 🧪 Tests
 
@@ -269,26 +296,27 @@ Run only the category service unit tests:
 
 On Windows, replace `./gradlew` with `.\gradlew.bat`.
 
-The suite currently contains category service unit tests using Mockito and a Spring Boot context-loading test. Category tests include successful operations, missing resources, duplicate names and empty pagination. They do not exercise real database queries or HTTP contracts.
+The suite includes category/product/user service tests, product promotion boundary tests, MockMvc controller tests, JPA Specification tests and complete product/order HTTP integration tests using H2. Integration scenarios cover nested validation, strict calendar dates, creation defaults, price filtering, order persistence, historical prices, cancellation and credential protection.
 
-After test execution, the HTML report is generated at `build/reports/tests/test/index.html`. Product/user service tests and controller/database integration coverage remain planned. Test commands are documented here; no passing result is claimed by this README.
+After test execution, the HTML report is generated at `build/reports/tests/test/index.html`. Tests using H2 validate the current local configuration; PostgreSQL compatibility and concurrency under real load require separate validation.
 
 ## 🚧 Roadmap
 
 ### Correctness and verification
 
-- [ ] Correct product price filters, promotion lifecycle and product activation defaults
-- [ ] Unify password-change rules and improve input validation
-- [ ] Remove duplicate product search execution
+- [x] Correct product price filters, promotion lifecycle and product activation defaults
+- [x] Separate profile updates from password changes and improve input validation
+- [x] Remove duplicate product search execution
 - [x] Initial unit tests for CategoryService
-- [ ] Unit tests for ProductService and UserService
-- [ ] Controller and repository integration tests
+- [x] Unit tests for ProductService and UserService
+- [x] Controller and repository integration tests
 - [ ] Automated build and tests in CI
 
 ### Persistence and business workflows
 
 - [ ] PostgreSQL profile, JDBC driver and versioned database migrations
-- [ ] Complete order creation, updates and cancellation
+- [x] Basic order creation, item updates and cancellation
+- [ ] Integrate orders with stock, payment and prescription workflows
 - [ ] Stock movements and concurrency handling
 - [ ] Prescription workflows
 
@@ -318,4 +346,4 @@ The next milestones focus on consistent business rules, complete sales workflows
 
 The project is intended for educational and portfolio purposes. No license file is currently included in the repository, so this README does not declare an open-source license.
 
-The current Swagger configuration advertises Apache 2.0, but this metadata is not accompanied by a repository license file. A license decision and alignment of that metadata remain pending.
+Swagger does not advertise a license until a license is selected and added to the repository.

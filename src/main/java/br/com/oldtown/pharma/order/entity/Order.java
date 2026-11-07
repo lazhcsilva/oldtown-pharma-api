@@ -16,6 +16,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    private Long version;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
     private User customer;

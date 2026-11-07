@@ -169,7 +169,7 @@ public class CategoryServiceImplTest {
         Page<CategoryResponse> result = categoryService.getAll(pageable);
 
         // Assert
-        assertThat(result.isEmpty());
+        assertThat(result.isEmpty()).isTrue();
         assertThat(result.getTotalElements()).isZero();
 
         verify(categoryRepository).findAll(pageable);

@@ -21,17 +21,18 @@ import br.com.oldtown.pharma.shared.exception.ConflictException;
 import br.com.oldtown.pharma.shared.exception.InvalidPriceException;
 import br.com.oldtown.pharma.shared.exception.NotFoundException;
 import br.com.oldtown.pharma.shared.utils.DateUtils;
-import br.com.oldtown.pharma.shared.utils.Util;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 
 @Service
+@Transactional
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
@@ -49,7 +50,14 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public Page<ProductResponse> search(ProductSearchCriteria criteria, Pageable pageable) {
+        if ((criteria.minPrice() != null && criteria.minPrice().signum() < 0)
+                || (criteria.maxPrice() != null && criteria.maxPrice().signum() < 0)
+                || (criteria.minPrice() != null && criteria.maxPrice() != null
+                    && criteria.minPrice().compareTo(criteria.maxPrice()) > 0)) {
+            throw new BadRequestException("Price bounds must be non-negative and minPrice must not exceed maxPrice.");
+        }
         Specification<Product> spec = (root, query, criteriaBuilder) ->
                 criteriaBuilder.conjunction();
 
@@ -81,14 +89,11 @@ public class ProductServiceImpl implements ProductService {
             spec = spec.and(ProductSpecification.hasCategory(criteria.categoryId()));
         }
 
-        Page<Product> result = productRepository.findAll(spec, pageable);
-
-        System.out.println(result.getContent());
-
         return productRepository.findAll(spec, pageable).map(productMapper::toResponse);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponse findByName(String name) {
 
         return productRepository.findByName(name)
@@ -97,6 +102,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponse findById(Long id) {
         return productRepository.findById(id)
                 .map(productMapper::toResponse)
@@ -105,6 +111,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse create(CreateProductRequest request) {
+        if (request.costPrice() == null || request.originalPrice() == null
+                || request.costPrice().signum() <= 0 || request.originalPrice().compareTo(request.costPrice()) <= 0) {
+            throw new InvalidPriceException("Original price must be greater than a positive cost price.");
+        }
+        validatePromotion(request.promotionalPrice(), request.costPrice(), request.promotionStartDate(),
+                request.promotionEndDate(), LocalDateTime.now());
         if (productRepository.existsByNameIgnoreCase(request.name())) {
             throw new ConflictException("Product already exists.");
         }
@@ -129,9 +141,9 @@ public class ProductServiceImpl implements ProductService {
 
         if (!product.isActive()) {
             throw new ConflictException("Inactive product");
-        } else if (request.promotionalPrice().compareTo(product.getCostPrice()) < 0
-                || request.promotionalPrice().compareTo(product.getCostPrice()) == 0) {
-            throw new InvalidPriceException("Price cannot be less or equal cost price");
+        }
+        if (request.promotionalPrice() == null || request.promotionalPrice().compareTo(product.getCostPrice()) <= 0) {
+            throw new InvalidPriceException("Price must be greater than cost price.");
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -152,16 +164,29 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("Promotion start and end dates are required.");
         }
 
-        if (DateUtils.isEndDateAfterStartDate(startDate, endDate)) {
-            throw new BadRequestException("The end date cannot be earlier than the start date.");
-        } else if (endDate.isBefore(now)) {
-            throw new BadRequestException("Promotion end date must not be in the past.");
-        } else {
-            product.setPromotionalPrice(request.promotionalPrice());
-            product.setPromotionStartDate(startDate);
-            product.setPromotionEndDate(endDate);
+        validatePromotion(request.promotionalPrice(), product.getCostPrice(), startDate, endDate, now);
+        product.setPromotionalPrice(request.promotionalPrice());
+        product.setPromotionStartDate(startDate);
+        product.setPromotionEndDate(endDate);
+        return productMapper.toResponsePromotionalPrice(productRepository.save(product));
+    }
 
-            return productMapper.toResponsePromotionalPrice(productRepository.save(product));
+    private void validatePromotion(BigDecimal price, BigDecimal cost, LocalDateTime start,
+                                   LocalDateTime end, LocalDateTime now) {
+        if (price == null) {
+            if (start != null || end != null) {
+                throw new BadRequestException("Promotion dates require a promotional price.");
+            }
+            return;
+        }
+        if (price.compareTo(cost) <= 0) {
+            throw new InvalidPriceException("Promotional price must be greater than cost price.");
+        }
+        if (!DateUtils.isEndDateAfterStartDate(start, end)) {
+            throw new BadRequestException("Promotion requires an end date after the start date.");
+        }
+        if (end.isBefore(now)) {
+            throw new BadRequestException("Promotion end date must not be in the past.");
         }
     }
 

@@ -27,6 +27,7 @@ public class User {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
@@ -34,7 +35,7 @@ public class User {
     private Role role;
 
     @Column(nullable = false)
-    private boolean active;
+    private boolean active = true;
 
     @Column(nullable = false)
     private boolean locked;
@@ -55,6 +56,20 @@ public class User {
     private List<Prescription> prescriptions = new ArrayList<>();
 
     public User() {}
+
+    @PrePersist
+    private void initializeTimestamps() {
+        LocalDateTime now = LocalDateTime.now();
+        if (createdAt == null) createdAt = now;
+        updatedAt = now;
+        if (passwordChangedAt == null) passwordChangedAt = now;
+        if (failedLoginAttempts == null) failedLoginAttempts = 0;
+    }
+
+    @PreUpdate
+    private void updateTimestamp() {
+        updatedAt = LocalDateTime.now();
+    }
 
     public User(String firstName, String lastName, String email) {
         this.firstName = firstName;
@@ -106,6 +121,7 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+        this.passwordChangedAt = LocalDateTime.now();
     }
 
     public Role getRole() {

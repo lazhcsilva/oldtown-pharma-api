@@ -10,6 +10,8 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface MedicineDetailsMapper {
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "product", ignore = true)
     MedicineDetails toEntity(CreateMedicineDetailsRequest request);
 
     @Mapping(
