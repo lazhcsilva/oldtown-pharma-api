@@ -1,4 +1,4 @@
-package br.com.oldtown.pharma.product.entity;
+package br.com.oldtown.pharma.product.entity.enums;
 
 public enum ProductPresentation {
     TABLET("Tablet"),
@@ -10,7 +10,8 @@ public enum ProductPresentation {
     INJECTION("Injection"),
     DROPS("Drops"),
     SPRAY("Spray"),
-    SUSPENSION("Suspension");
+    SUSPENSION("Suspension"),
+    INHALER("Inhaler");;
 
     private final String description;
 

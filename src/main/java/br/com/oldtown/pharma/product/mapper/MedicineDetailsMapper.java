@@ -1,7 +1,7 @@
 package br.com.oldtown.pharma.product.mapper;
 
-import br.com.oldtown.pharma.product.dto.CreateMedicineDetailsRequest;
-import br.com.oldtown.pharma.product.dto.MedicineDetailsResponse;
+import br.com.oldtown.pharma.product.dto.request.CreateMedicineDetailsRequest;
+import br.com.oldtown.pharma.product.dto.response.MedicineDetailsResponse;
 import br.com.oldtown.pharma.product.entity.MedicineDetails;
 import br.com.oldtown.pharma.shared.utils.EnumResponse;
 import org.mapstruct.Mapper;
