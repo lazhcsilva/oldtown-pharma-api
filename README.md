@@ -137,8 +137,6 @@ Example response:
 
 ```json
 {
-<<<<<<< Updated upstream
-=======
   "id": 42,
   "firstName": "Example",
   "lastName": "User",
@@ -182,7 +180,6 @@ Example of the response structure for an invalid email in user creation:
 ```json
 {
   "timestamp": "2026-05-24T10:30:00",
->>>>>>> Stashed changes
   "status": 400,
   "message": "Invalid request",
   "path": "/users"
