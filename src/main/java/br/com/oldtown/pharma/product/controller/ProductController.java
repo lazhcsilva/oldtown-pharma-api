@@ -8,8 +8,14 @@ import br.com.oldtown.pharma.product.dto.response.UpdatePriceResponse;
 import br.com.oldtown.pharma.product.entity.enums.ProductType;
 import br.com.oldtown.pharma.product.entity.enums.TherapeuticClass;
 import br.com.oldtown.pharma.product.service.ProductService;
+import br.com.oldtown.pharma.shared.exception.BadRequestException;
 import br.com.oldtown.pharma.product.specification.ProductSearchCriteria;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,12 +31,19 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Tag(name = "Products", description = "Operations related to products")
 @RestController
 @RequestMapping("/api/v1/products")
 @Validated
 public class ProductController {
+
+    private static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of(
+            "id", "name", "description", "manufacturer", "costPrice", "originalPrice",
+            "promotionalPrice", "promotionStartDate", "promotionEndDate", "active",
+            "sku", "barcode", "productType", "status", "createdAt", "updatedAt"
+    );
 
     private final ProductService productService;
 
@@ -43,6 +56,19 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "Products retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
+    @Parameters({
+            @Parameter(name = "page", in = ParameterIn.QUERY, description = "Zero-based page index",
+                    schema = @Schema(type = "integer", defaultValue = "0")),
+            @Parameter(name = "size", in = ParameterIn.QUERY, description = "Page size",
+                    schema = @Schema(type = "integer", defaultValue = "10")),
+            @Parameter(name = "sort", in = ParameterIn.QUERY,
+                    description = "Property and optional direction (asc or desc). Repeat for multiple orders. "
+                            + "Allowed properties: id, name, description, manufacturer, costPrice, originalPrice, "
+                            + "promotionalPrice, promotionStartDate, promotionEndDate, active, sku, barcode, "
+                            + "productType, status, createdAt, updatedAt. currentPrice is not sortable.",
+                    array = @ArraySchema(schema = @Schema(type = "string", example = "name,asc")),
+                    example = "[\"name,asc\"]")
+    })
     @GetMapping("/search")
     public ResponseEntity<Page<ProductResponse>> search(
             @RequestParam(required = false) String name,
@@ -53,10 +79,20 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) Long categoryId,
             @PageableDefault(page = 0, size = 10, direction = Sort.Direction.ASC)
-            Pageable pageable) {
+            @Parameter(hidden = true) Pageable pageable) {
+        validateSort(pageable.getSort());
         ProductSearchCriteria criteria = new ProductSearchCriteria(name, type, therapeuticClass, active,
                 minPrice, maxPrice, categoryId);
         return ResponseEntity.ok(productService.search(criteria, pageable));
+    }
+
+    private void validateSort(Sort sort) {
+        for (Sort.Order order : sort) {
+            if (!ALLOWED_SORT_PROPERTIES.contains(order.getProperty())) {
+                throw new BadRequestException("Invalid sort property. Use an allowed property, "
+                        + "optionally followed by ,asc or ,desc (example: name,asc).");
+            }
+        }
     }
 
     @Operation(summary = "Gey product by ID")
